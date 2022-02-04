@@ -1,43 +1,43 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "coverity-report-output-v7-json",
+  "version": "0.0.1",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "Parse Coverity output-v7-json and report on the results within GitHub",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint src/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt",
+    "package": "ncc build --source-map",
     "test": "jest",
-    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test",
+    "preversion": "npm test",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/actions/typescript-action.git"
   },
-  "keywords": [
-    "actions",
-    "node",
-    "setup"
-  ],
-  "author": "",
-  "license": "MIT",
+  "keywords": [],
+  "author": "Synopsys Inc.",
+  "license": "Apache 2.0",
   "dependencies": {
     "@actions/core": "^1.6.0"
   },
   "devDependencies": {
-    "@types/node": "^16.10.5",
-    "@typescript-eslint/parser": "^5.8.1",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.6",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
     "@vercel/ncc": "^0.31.1",
-    "eslint": "^7.32.0",
-    "eslint-plugin-github": "^4.3.2",
-    "eslint-plugin-jest": "^25.3.2",
-    "jest": "^27.2.5",
-    "js-yaml": "^4.1.0",
-    "prettier": "2.5.1",
+    "eslint": "^8.1.0",
+    "eslint-plugin-github": "^4.3.5",
+    "eslint-plugin-jest": "^26.0.0",
+    "jest": "^27.4.5",
+    "prettier": "^2.4.1",
     "ts-jest": "^27.1.2",
-    "typescript": "^4.4.4"
+    "typescript": "^4.5.4"
   }
 }
