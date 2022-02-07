@@ -48,13 +48,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core_1 = __nccwpck_require__(186);
+const core = __importStar(__nccwpck_require__(186));
 const inputs = __importStar(__nccwpck_require__(180));
+const fs_1 = __importDefault(__nccwpck_require__(747));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        inputs.JSON_FILE_PATH;
-        (0, core_1.info)(`Using JSON file path: ${inputs.JSON_FILE_PATH}`);
+        core.info(`Using JSON file path: ${inputs.JSON_FILE_PATH}`);
+        // TODO validate file exists and is .json?
+        const jsonV7Content = fs_1.default.readFileSync(inputs.JSON_FILE_PATH);
+        const coverityIssues = JSON.parse(jsonV7Content.toString());
+        core.info(`Found ${coverityIssues.issues.length} Coverity issues.`);
     });
 }
 run();
