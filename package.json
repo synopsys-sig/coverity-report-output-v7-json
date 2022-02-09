@@ -2,7 +2,7 @@
   "name": "coverity-report-output-v7-json",
   "version": "0.0.1",
   "private": true,
-  "description": "Parse Coverity output-v7-json and report on the results within GitHub",
+  "description": "Parse Coverity json-output-v7 and report on the results within GitHub",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",

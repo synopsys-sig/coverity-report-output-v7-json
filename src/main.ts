@@ -1,19 +1,18 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as inputs from './inputs'
+import fs from 'fs'
+import {CoverityIssuesView} from './json-v7-schema'
 
 async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+  core.info(`Using JSON file path: ${inputs.JSON_FILE_PATH}`)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+  // TODO validate file exists and is .json?
+  const jsonV7Content = fs.readFileSync(inputs.JSON_FILE_PATH)
+  const coverityIssues = JSON.parse(
+    jsonV7Content.toString()
+  ) as CoverityIssuesView
 
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
-  }
+  core.info(`Found ${coverityIssues.issues.length} Coverity issues.`)
 }
 
 run()
