@@ -22,3 +22,15 @@ export function getSha(): string {
 
   return sha
 }
+
+export function getPullRequestNumber(): number | undefined {
+  let pr_number = undefined
+  if (isPullRequest()) {
+    const pull = context.payload.pull_request as PullRequest
+    if (pull?.number) {
+      pr_number = pull.number
+    }
+  }
+
+  return pr_number
+}
