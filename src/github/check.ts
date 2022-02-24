@@ -17,9 +17,7 @@ export async function createCheck(checkName: string): Promise<GitHubCheck> {
   })
 
   if (response.status !== 201) {
-    warning(
-      `Unexpected status code recieved when creating ${checkName}: ${response.status}`
-    )
+    warning(`Unexpected status code recieved when creating ${checkName}: ${response.status}`)
     debug(JSON.stringify(response, null, 2))
   } else {
     info(`${checkName} created`)
@@ -50,18 +48,10 @@ export class GitHubCheck {
   }
 
   async cancelCheck(): Promise<void> {
-    return this.finishCheck(
-      'cancelled',
-      `${this.checkName} Check could not be completed`,
-      `Something went wrong and the ${this.checkName} could not be completed. Check your action logs for more details.`
-    )
+    return this.finishCheck('cancelled', `${this.checkName} Check could not be completed`, `Something went wrong and the ${this.checkName} could not be completed. Check your action logs for more details.`)
   }
 
-  private async finishCheck(
-    conclusion: string,
-    summary: string,
-    text: string
-  ): Promise<void> {
+  private async finishCheck(conclusion: string, summary: string, text: string): Promise<void> {
     const octokit = getOctokit(GITHUB_TOKEN)
 
     const response = await octokit.rest.checks.update({
@@ -78,9 +68,7 @@ export class GitHubCheck {
     })
 
     if (response.status !== 200) {
-      warning(
-        `Unexpected status code recieved when creating check: ${response.status}`
-      )
+      warning(`Unexpected status code recieved when creating check: ${response.status}`)
       debug(JSON.stringify(response, null, 2))
     } else {
       info(`${this.checkName} updated`)

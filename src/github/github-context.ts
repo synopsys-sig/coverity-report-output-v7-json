@@ -1,11 +1,7 @@
 import {PullRequest} from '../_namespaces/github'
 import {context} from '@actions/github'
 
-const prEvents = [
-  'pull_request',
-  'pull_request_review',
-  'pull_request_review_comment'
-]
+const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment']
 
 export function isPullRequest(): boolean {
   return prEvents.includes(context.eventName)

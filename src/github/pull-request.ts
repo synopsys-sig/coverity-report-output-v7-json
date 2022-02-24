@@ -2,17 +2,15 @@ import {context, getOctokit} from '@actions/github'
 import {GITHUB_TOKEN} from '../inputs'
 import {getPullRequestNumber} from './github-context'
 
-export async function getPullRequestDiff(): Promise<GitDiff[]> {
+type Side = 'RIGHT' | 'LEFT'
+
+export async function getPullRequestDiff(): Promise<string> {
   const octokit = getOctokit(GITHUB_TOKEN)
 
   const pullRequestNumber = getPullRequestNumber()
 
   if (!pullRequestNumber) {
-    return Promise.reject(
-      Error(
-        'Could not get Pull Request Diff: Action was not running on a Pull Request'
-      )
-    )
+    return Promise.reject(Error('Could not get Pull Request Diff: Action was not running on a Pull Request'))
   }
 
   const response = await octokit.rest.pulls.get({
@@ -24,50 +22,26 @@ export async function getPullRequestDiff(): Promise<GitDiff[]> {
     }
   })
 
-  const diffs = []
-
-  const diff = response.data as unknown as string
-  const diffLines = diff.split('\n')
-
-  let path = undefined
-  for (const line of diffLines) {
-    if (line.startsWith('diff --git')) {
-      // TODO: Handle spaces in path
-      path = line.split(' ')[2].substring(2)
-    }
-
-    if (line.startsWith('@@')) {
-      let changedLines = line.substring(3)
-      changedLines = changedLines.substring(0, changedLines.indexOf(' @@'))
-
-      const linesAddedPosition = changedLines.indexOf('+')
-      if (linesAddedPosition > -1) {
-        // We only care about the right side because Coverity can only analyze what's there, not what used to be --rotte FEB 2022
-        const linesAddedString = changedLines.substring(linesAddedPosition + 1)
-        const separatorPosition = linesAddedString.indexOf(',')
-
-        const startLine = parseInt(
-          linesAddedString.substring(0, separatorPosition)
-        )
-        const lineCount = parseInt(
-          linesAddedString.substring(separatorPosition + 1)
-        )
-        const endLine = startLine + lineCount - 1
-
-        diffs.push({
-          filePath: path,
-          firstLine: startLine,
-          lastLine: endLine
-        })
-      }
-    }
-  }
-
-  return diffs
+  return response.data as unknown as string
 }
 
-export interface GitDiff {
-  filePath?: string
-  firstLine: number
-  lastLine: number
+export async function createPullRequestReviewComment(body: string, lastSide: Side = 'RIGHT', lastLine: number, firstSide?: Side, firstLine?: number): Promise<void> {
+  const octokit = getOctokit(GITHUB_TOKEN)
+
+  const pullRequestNumber = getPullRequestNumber()
+
+  if (!pullRequestNumber) {
+    return Promise.reject(Error('Could not create Pull Request Review COmment: Action was not running on a Pull Request'))
+  }
+
+  octokit.rest.pulls.createReviewComment({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    pull_number: pullRequestNumber,
+    body,
+    start_side: firstSide,
+    start_line: firstLine,
+    side: lastSide,
+    line: lastLine
+  })
 }
