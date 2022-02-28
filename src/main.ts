@@ -3,8 +3,8 @@ import * as inputs from './inputs'
 import fs from 'fs'
 import {CoverityIssuesView} from './json-v7-schema'
 import {isPullRequest} from './github/github-context'
-import {getPullRequestDiff} from './github/pull-request'
-import {getReportableLinesFromDiff} from './reporting'
+import {createPullRequestReviewComment, getPullRequestDiff} from './github/pull-request'
+import {createMessageFromDefect, getReportableLinesFromDiff} from './reporting'
 
 async function run(): Promise<void> {
   core.info(`Using JSON file path: ${inputs.JSON_FILE_PATH}`)
@@ -20,11 +20,11 @@ async function run(): Promise<void> {
       if (reportableHunks !== undefined) {
         for (const hunk of reportableHunks) {
           if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
-            // Comment on mainEventLineNumber
+            createPullRequestReviewComment(createMessageFromDefect(issue), issue.mainEventLineNumber)
           }
         }
       } else {
-        // Append to generic PR comment
+        // Create separate comment
       }
     }
   }

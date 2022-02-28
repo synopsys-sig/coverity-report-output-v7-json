@@ -25,7 +25,7 @@ export async function getPullRequestDiff(): Promise<string> {
   return response.data as unknown as string
 }
 
-export async function createPullRequestReviewComment(body: string, lastSide: Side = 'RIGHT', lastLine: number, firstSide?: Side, firstLine?: number): Promise<void> {
+export async function createPullRequestReviewComment(body: string, lastLine: number, lastSide: Side = 'RIGHT', firstLine?: number, firstSide?: Side): Promise<void> {
   const octokit = getOctokit(GITHUB_TOKEN)
 
   const pullRequestNumber = getPullRequestNumber()
