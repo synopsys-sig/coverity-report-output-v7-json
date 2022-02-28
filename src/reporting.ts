@@ -24,7 +24,7 @@ export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]>
   for (const line of rawDiff.split('\n')) {
     if (line.startsWith('diff --git')) {
       // TODO: Handle spaces in path
-      path = line.split(' ')[2].substring(2)
+      path = `${process.env.WORKSPACE_HOME}/${line.split(' ')[2].substring(2)}`
       if (path === undefined) {
         path = UNKNOWN_FILE
       }

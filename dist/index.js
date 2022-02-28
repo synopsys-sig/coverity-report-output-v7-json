@@ -219,7 +219,7 @@ function getReportableLinesFromDiff(rawDiff) {
     for (const line of rawDiff.split('\n')) {
         if (line.startsWith('diff --git')) {
             // TODO: Handle spaces in path
-            path = line.split(' ')[2].substring(2);
+            path = `${process.env.WORKSPACE_HOME}/${line.split(' ')[2].substring(2)}`;
             if (path === undefined) {
                 path = exports.UNKNOWN_FILE;
             }
