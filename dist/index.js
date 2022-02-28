@@ -168,10 +168,14 @@ function run() {
         if ((0, github_context_1.isPullRequest)()) {
             const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
             for (const issue of coverityIssues.issues) {
+                console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
                 const reportableHunks = reportableLineMap.get(issue.mainEventFilePathname);
                 if (reportableHunks !== undefined) {
+                    console.info('File is in the diff!');
                     for (const hunk of reportableHunks) {
+                        console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
+                            console.info('It does! Commenting on PR.');
                             (0, pull_request_1.createPullRequestReviewComment)((0, reporting_1.createMessageFromDefect)(issue), issue.mainEventLineNumber);
                         }
                     }
@@ -214,6 +218,7 @@ ${(_e = issue.events.filter(event => event.remediation === true)[0]) === null ||
 exports.createMessageFromDefect = createMessageFromDefect;
 function getReportableLinesFromDiff(rawDiff) {
     var _a;
+    console.info('Gathering diffs...');
     const reportableLineMap = new Map();
     let path = exports.UNKNOWN_FILE;
     for (const line of rawDiff.split('\n')) {
@@ -239,6 +244,7 @@ function getReportableLinesFromDiff(rawDiff) {
                 if (!reportableLineMap.has(path)) {
                     reportableLineMap.set(path, []);
                 }
+                console.info(`Added ${path}: ${startLine} to ${endLine}`);
                 (_a = reportableLineMap.get(path)) === null || _a === void 0 ? void 0 : _a.push({ firstLine: startLine, lastLine: endLine });
             }
         }

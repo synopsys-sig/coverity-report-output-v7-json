@@ -18,6 +18,7 @@ ${issue.events.filter(event => event.remediation === true)[0]?.eventDescription}
 }
 
 export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]> {
+  console.info('Gathering diffs...')
   const reportableLineMap: Map<string, Hunk[]> = new Map()
 
   let path = UNKNOWN_FILE
@@ -49,6 +50,7 @@ export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]>
         if (!reportableLineMap.has(path)) {
           reportableLineMap.set(path, [])
         }
+        console.info(`Added ${path}: ${startLine} to ${endLine}`)
         reportableLineMap.get(path)?.push({firstLine: startLine, lastLine: endLine})
       }
     }

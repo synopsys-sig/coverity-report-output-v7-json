@@ -16,10 +16,14 @@ async function run(): Promise<void> {
   if (isPullRequest()) {
     const reportableLineMap = await getPullRequestDiff().then(getReportableLinesFromDiff)
     for (const issue of coverityIssues.issues) {
+      console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
       const reportableHunks = reportableLineMap.get(issue.mainEventFilePathname)
       if (reportableHunks !== undefined) {
+        console.info('File is in the diff!')
         for (const hunk of reportableHunks) {
+          console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`)
           if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
+            console.info('It does! Commenting on PR.')
             createPullRequestReviewComment(createMessageFromDefect(issue), issue.mainEventLineNumber)
           }
         }
