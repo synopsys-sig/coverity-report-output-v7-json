@@ -1,11 +1,10 @@
-import { IssueOccurrence } from "./json-v7-schema"
+import {IssueOccurrence} from './json-v7-schema'
 
 export const UNKNOWN_FILE = 'Unknown File'
 export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->\r\n'
 
 export function createMessageFromDefect(issue: IssueOccurrence): string {
-  let comment = 
-`${COMMENT_PREFIX}
+  let comment = `${COMMENT_PREFIX}
 <!-- ${issue.mergeKey}  -->\r\n
 Coverity found issue: ${issue.checkerName}, ${issue.checkerProperties?.subcategroyShortDescription} - ${issue.checkerProperties?.impact}, ${issue.checkerProperties?.cweCategory}\r\n
 \r\n

@@ -78,7 +78,7 @@ function getPullRequestDiff() {
     });
 }
 exports.getPullRequestDiff = getPullRequestDiff;
-function createPullRequestReviewComment(body, lastSide = 'RIGHT', lastLine, firstSide, firstLine) {
+function createPullRequestReviewComment(body, lastLine, lastSide = 'RIGHT', firstLine, firstSide) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
         const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
@@ -172,12 +172,12 @@ function run() {
                 if (reportableHunks !== undefined) {
                     for (const hunk of reportableHunks) {
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
-                            // Comment on mainEventLineNumber
+                            (0, pull_request_1.createPullRequestReviewComment)((0, reporting_1.createMessageFromDefect)(issue), issue.mainEventLineNumber);
                         }
                     }
                 }
                 else {
-                    // Append to generic PR comment
+                    // Create separate comment
                 }
             }
         }
@@ -195,8 +195,23 @@ run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getReportableLinesFromDiff = exports.UNKNOWN_FILE = void 0;
+exports.getReportableLinesFromDiff = exports.createMessageFromDefect = exports.COMMENT_PREFIX = exports.UNKNOWN_FILE = void 0;
 exports.UNKNOWN_FILE = 'Unknown File';
+exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->\r\n';
+function createMessageFromDefect(issue) {
+    var _a, _b, _c, _d, _e;
+    let comment = `${exports.COMMENT_PREFIX}
+<!-- ${issue.mergeKey}  -->\r\n
+Coverity found issue: ${issue.checkerName}, ${(_a = issue.checkerProperties) === null || _a === void 0 ? void 0 : _a.subcategroyShortDescription} - ${(_b = issue.checkerProperties) === null || _b === void 0 ? void 0 : _b.impact}, ${(_c = issue.checkerProperties) === null || _c === void 0 ? void 0 : _c.cweCategory}\r\n
+\r\n
+**${(_d = issue.events.filter(event => event.main === true)[0]) === null || _d === void 0 ? void 0 : _d.eventDescription}**\r\n
+\r\n
+How to fix:\r\n
+${(_e = issue.events.filter(event => event.remediation === true)[0]) === null || _e === void 0 ? void 0 : _e.eventDescription}
+`;
+    return comment;
+}
+exports.createMessageFromDefect = createMessageFromDefect;
 function getReportableLinesFromDiff(rawDiff) {
     var _a;
     const reportableLineMap = new Map();
