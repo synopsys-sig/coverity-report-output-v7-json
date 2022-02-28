@@ -57,8 +57,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createPullRequestReviewComment = exports.getPullRequestDiff = void 0;
 const github_1 = __nccwpck_require__(5438);
-const inputs_1 = __nccwpck_require__(6180);
 const github_context_1 = __nccwpck_require__(4915);
+const inputs_1 = __nccwpck_require__(6180);
 function getPullRequestDiff() {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
@@ -78,10 +78,16 @@ function getPullRequestDiff() {
     });
 }
 exports.getPullRequestDiff = getPullRequestDiff;
-function createPullRequestReviewComment(body, lastLine, lastSide = 'RIGHT', firstLine, firstSide) {
+function createPullRequestReviewComment(body, path, lastLine, lastSide = 'RIGHT', firstLine, firstSide) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
         const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
+        let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
+        if (!length) {
+            length = 'undefined'.length;
+        }
+        const relativePath = path.substring(length);
         if (!pullRequestNumber) {
             return Promise.reject(Error('Could not create Pull Request Review COmment: Action was not running on a Pull Request'));
         }
@@ -90,6 +96,8 @@ function createPullRequestReviewComment(body, lastLine, lastSide = 'RIGHT', firs
             repo: github_1.context.repo.repo,
             pull_number: pullRequestNumber,
             body,
+            path: relativePath,
+            commit_id: (0, github_context_1.getSha)(),
             start_side: firstSide,
             start_line: firstLine,
             side: lastSide,
@@ -176,7 +184,7 @@ function run() {
                         console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
                             console.info('It does! Commenting on PR.');
-                            (0, pull_request_1.createPullRequestReviewComment)((0, reporting_1.createMessageFromDefect)(issue), issue.mainEventLineNumber);
+                            (0, pull_request_1.createPullRequestReviewComment)((0, reporting_1.createMessageFromDefect)(issue), issue.mainEventFilePathname, issue.mainEventLineNumber);
                         }
                     }
                 }

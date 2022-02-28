@@ -5,6 +5,7 @@ import {CoverityIssuesView} from './json-v7-schema'
 import {isPullRequest} from './github/github-context'
 import {createPullRequestReviewComment, getPullRequestDiff} from './github/pull-request'
 import {createMessageFromDefect, getReportableLinesFromDiff} from './reporting'
+import {context} from '@actions/github'
 
 async function run(): Promise<void> {
   core.info(`Using JSON file path: ${inputs.JSON_FILE_PATH}`)
@@ -24,7 +25,7 @@ async function run(): Promise<void> {
           console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`)
           if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
             console.info('It does! Commenting on PR.')
-            createPullRequestReviewComment(createMessageFromDefect(issue), issue.mainEventLineNumber)
+            createPullRequestReviewComment(createMessageFromDefect(issue), issue.mainEventFilePathname, issue.mainEventLineNumber)
           }
         }
       } else {
