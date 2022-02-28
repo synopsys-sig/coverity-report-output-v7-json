@@ -40,11 +40,6 @@ export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]>
   return reportableLineMap
 }
 
-export interface FileDiff {
-  firstLine: number
-  hunks: Hunk[]
-}
-
 export interface Hunk {
   firstLine: number
   lastLine: number
