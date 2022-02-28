@@ -87,7 +87,7 @@ function createPullRequestReviewComment(body, path, lastLine, lastSide = 'RIGHT'
         if (!length) {
             length = 'undefined'.length;
         }
-        const relativePath = path.substring(length);
+        const relativePath = path.substring(length + 1);
         if (!pullRequestNumber) {
             return Promise.reject(Error('Could not create Pull Request Review COmment: Action was not running on a Pull Request'));
         }
