@@ -55,10 +55,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPullRequestReviewComment = exports.getPullRequestDiff = void 0;
+exports.createPullRequestReview = exports.createReviewComments = exports.getPullRequestDiff = void 0;
 const github_1 = __nccwpck_require__(5438);
-const github_context_1 = __nccwpck_require__(4915);
 const inputs_1 = __nccwpck_require__(6180);
+const reporting_1 = __nccwpck_require__(5036);
+const github_context_1 = __nccwpck_require__(4915);
 function getPullRequestDiff() {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
@@ -78,34 +79,42 @@ function getPullRequestDiff() {
     });
 }
 exports.getPullRequestDiff = getPullRequestDiff;
-function createPullRequestReviewComment(body, path, lastLine, lastSide = 'RIGHT', firstLine, firstSide) {
+function createReviewComments(issues) {
     var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
-        const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
+    const comments = [];
+    for (const issue of issues) {
         let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
         if (!length) {
             length = 'undefined'.length;
         }
-        const relativePath = path.substring(length + 1);
+        const relativePath = issue.mainEventFilePathname.substring(length + 1);
+        comments.push({
+            path: relativePath,
+            body: (0, reporting_1.createMessageFromDefect)(issue),
+            line: issue.mainEventLineNumber,
+            side: 'RIGHT'
+        });
+    }
+    return comments;
+}
+exports.createReviewComments = createReviewComments;
+function createPullRequestReview(comments) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
         if (!pullRequestNumber) {
-            return Promise.reject(Error('Could not create Pull Request Review COmment: Action was not running on a Pull Request'));
+            return Promise.reject(Error('Could not create Pull Request Review Comment: Action was not running on a Pull Request'));
         }
-        octokit.rest.pulls.createReviewComment({
+        octokit.rest.pulls.createReview({
             owner: github_1.context.repo.owner,
             repo: github_1.context.repo.repo,
             pull_number: pullRequestNumber,
-            body,
-            path: relativePath,
-            commit_id: (0, github_context_1.getSha)(),
-            start_side: firstSide,
-            start_line: firstLine,
-            side: lastSide,
-            line: lastLine
+            event: 'COMMENT',
+            comments
         });
     });
 }
-exports.createPullRequestReviewComment = createPullRequestReviewComment;
+exports.createPullRequestReview = createPullRequestReview;
 
 
 /***/ }),
@@ -129,25 +138,6 @@ exports.JSON_FILE_PATH = (0, core_1.getInput)('json-file-path');
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -161,19 +151,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const inputs = __importStar(__nccwpck_require__(6180));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
-const github_context_1 = __nccwpck_require__(4915);
 const pull_request_1 = __nccwpck_require__(709);
+const github_context_1 = __nccwpck_require__(4915);
 const reporting_1 = __nccwpck_require__(5036);
+const inputs_1 = __nccwpck_require__(6180);
+const core_1 = __nccwpck_require__(2186);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Using JSON file path: ${inputs.JSON_FILE_PATH}`);
+        (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
         // TODO validate file exists and is .json?
-        const jsonV7Content = fs_1.default.readFileSync(inputs.JSON_FILE_PATH);
+        const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         if ((0, github_context_1.isPullRequest)()) {
+            const issuesToComment = [];
             const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
             for (const issue of coverityIssues.issues) {
                 console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
@@ -183,8 +174,8 @@ function run() {
                     for (const hunk of reportableHunks) {
                         console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
-                            console.info('It does! Commenting on PR.');
-                            (0, pull_request_1.createPullRequestReviewComment)((0, reporting_1.createMessageFromDefect)(issue), issue.mainEventFilePathname, issue.mainEventLineNumber);
+                            console.info('It does! Adding to review.');
+                            issuesToComment.push(issue);
                         }
                     }
                 }
@@ -192,8 +183,9 @@ function run() {
                     // Create separate comment
                 }
             }
+            (0, pull_request_1.createPullRequestReview)((0, pull_request_1.createReviewComments)(issuesToComment));
         }
-        core.info(`Found ${coverityIssues.issues.length} Coverity issues.`);
+        (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
     });
 }
 run();
