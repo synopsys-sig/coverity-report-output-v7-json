@@ -201,16 +201,16 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getReportableLinesFromDiff = exports.createMessageFromDefect = exports.COMMENT_PREFIX = exports.UNKNOWN_FILE = void 0;
 exports.UNKNOWN_FILE = 'Unknown File';
-exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->\r\n';
+exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->';
 function createMessageFromDefect(issue) {
     var _a, _b, _c, _d, _e;
     let comment = `${exports.COMMENT_PREFIX}
-<!-- ${issue.mergeKey}  -->\r\n
-Coverity found issue: ${issue.checkerName}, ${(_a = issue.checkerProperties) === null || _a === void 0 ? void 0 : _a.subcategroyShortDescription} - ${(_b = issue.checkerProperties) === null || _b === void 0 ? void 0 : _b.impact}, ${(_c = issue.checkerProperties) === null || _c === void 0 ? void 0 : _c.cweCategory}\r\n
-\r\n
-**${(_d = issue.events.filter(event => event.main === true)[0]) === null || _d === void 0 ? void 0 : _d.eventDescription}**\r\n
-\r\n
-How to fix:\r\n
+<!-- ${issue.mergeKey}  -->
+Coverity found issue: ${((_a = issue.checkerProperties) === null || _a === void 0 ? void 0 : _a.subcategoryShortDescription) ? `${issue.checkerProperties.subcategoryShortDescription} (${issue.checkerName})` : issue.checkerName} - ${(_b = issue.checkerProperties) === null || _b === void 0 ? void 0 : _b.impact}, ${(_c = issue.checkerProperties) === null || _c === void 0 ? void 0 : _c.cweCategory}
+
+<b>${(_d = issue.events.filter(event => event.main === true)[0]) === null || _d === void 0 ? void 0 : _d.eventDescription}</b>
+
+How to fix:
 ${(_e = issue.events.filter(event => event.remediation === true)[0]) === null || _e === void 0 ? void 0 : _e.eventDescription}
 `;
     return comment;

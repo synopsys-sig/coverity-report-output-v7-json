@@ -1,16 +1,16 @@
 import {IssueOccurrence} from './json-v7-schema'
 
 export const UNKNOWN_FILE = 'Unknown File'
-export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->\r\n'
+export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->'
 
 export function createMessageFromDefect(issue: IssueOccurrence): string {
   let comment = `${COMMENT_PREFIX}
-<!-- ${issue.mergeKey}  -->\r\n
-Coverity found issue: ${issue.checkerName}, ${issue.checkerProperties?.subcategroyShortDescription} - ${issue.checkerProperties?.impact}, ${issue.checkerProperties?.cweCategory}\r\n
-\r\n
-**${issue.events.filter(event => event.main === true)[0]?.eventDescription}**\r\n
-\r\n
-How to fix:\r\n
+<!-- ${issue.mergeKey}  -->
+Coverity found issue: ${issue.checkerProperties?.subcategoryShortDescription ? `${issue.checkerProperties.subcategoryShortDescription} (${issue.checkerName})` : issue.checkerName} - ${issue.checkerProperties?.impact}, ${issue.checkerProperties?.cweCategory}
+
+<b>${issue.events.filter(event => event.main === true)[0]?.eventDescription}</b>
+
+How to fix:
 ${issue.events.filter(event => event.remediation === true)[0]?.eventDescription}
 `
 
