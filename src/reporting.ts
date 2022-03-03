@@ -3,21 +3,15 @@ import {IssueOccurrence} from './json-v7-schema'
 export const UNKNOWN_FILE = 'Unknown File'
 export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->'
 
-export function createMessageFromDefect(issue: IssueOccurrence): string {
+export function createMessageFromIssue(issue: IssueOccurrence): string {
   const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName
-  const checkerNameString = issue.checkerProperties
-    ? `
-  _${issue.checkerName}_`
-    : ''
+  const checkerNameString = issue.checkerProperties ? `\r\n_${issue.checkerName}_` : ''
   const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown'
   const cweString = issue.checkerProperties ? `, CWE-${issue.checkerProperties.cweCategory}` : ''
   const mainEvent = issue.events.find(event => event.main === true)
   const mainEventDescription = mainEvent ? mainEvent.eventDescription : ''
   const remediationEvent = issue.events.find(event => event.remediation === true)
-  const remediationString = remediationEvent
-    ? `## How to fix
-  ${remediationEvent.eventDescription}`
-    : ''
+  const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : ''
 
   let comment = `${COMMENT_PREFIX}
 <!-- ${issue.mergeKey}  -->

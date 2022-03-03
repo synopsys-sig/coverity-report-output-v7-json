@@ -55,10 +55,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPullRequestReview = exports.createReviewComments = exports.getPullRequestDiff = void 0;
+exports.createPullRequestReview = exports.updateExistingReviewComment = exports.getExistingReviewComments = exports.getPullRequestDiff = void 0;
 const github_1 = __nccwpck_require__(5438);
 const inputs_1 = __nccwpck_require__(6180);
-const reporting_1 = __nccwpck_require__(5036);
 const github_context_1 = __nccwpck_require__(4915);
 function getPullRequestDiff() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -79,25 +78,34 @@ function getPullRequestDiff() {
     });
 }
 exports.getPullRequestDiff = getPullRequestDiff;
-function createReviewComments(issues) {
-    var _a;
-    const comments = [];
-    for (const issue of issues) {
-        let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
-        if (!length) {
-            length = 'undefined'.length;
+function getExistingReviewComments() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
+        if (!pullRequestNumber) {
+            return Promise.reject(Error('Could not create Pull Request Review Comment: Action was not running on a Pull Request'));
         }
-        const relativePath = issue.mainEventFilePathname.substring(length + 1);
-        comments.push({
-            path: relativePath,
-            body: (0, reporting_1.createMessageFromDefect)(issue),
-            line: issue.mainEventLineNumber,
-            side: 'RIGHT'
+        const reviewCommentsResponse = yield octokit.rest.pulls.listReviewComments({
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            pull_number: pullRequestNumber
         });
-    }
-    return comments;
+        return reviewCommentsResponse.data;
+    });
 }
-exports.createReviewComments = createReviewComments;
+exports.getExistingReviewComments = getExistingReviewComments;
+function updateExistingReviewComment(commentId, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        octokit.rest.pulls.updateReviewComment({
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            comment_id: commentId,
+            body
+        });
+    });
+}
+exports.updateExistingReviewComment = updateExistingReviewComment;
 function createPullRequestReview(comments) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
@@ -151,6 +159,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createReviewComments = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const pull_request_1 = __nccwpck_require__(709);
 const github_context_1 = __nccwpck_require__(4915);
@@ -165,6 +174,7 @@ function run() {
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         if ((0, github_context_1.isPullRequest)()) {
             const issuesToComment = [];
+            const reviewCommentsPromise = (0, pull_request_1.getExistingReviewComments)();
             const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
             for (const issue of coverityIssues.issues) {
                 console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
@@ -175,7 +185,17 @@ function run() {
                         console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
                             console.info('It does! Adding to review.');
-                            issuesToComment.push(issue);
+                            const reviewComments = yield reviewCommentsPromise;
+                            const commentToUpdate = reviewComments
+                                .filter(comment => comment.line === issue.mainEventLineNumber)
+                                .filter(comment => comment.body.split('\r\n')[0] === reporting_1.COMMENT_PREFIX)
+                                .find(comment => comment.body.split('\r\n')[1] === `<!-- ${issue.mergeKey} -->`);
+                            if (commentToUpdate) {
+                                (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, (0, reporting_1.createMessageFromIssue)(issue));
+                            }
+                            else {
+                                issuesToComment.push(issue);
+                            }
                         }
                     }
                 }
@@ -183,11 +203,33 @@ function run() {
                     // Create separate comment
                 }
             }
-            (0, pull_request_1.createPullRequestReview)((0, pull_request_1.createReviewComments)(issuesToComment));
+            if (issuesToComment.length > 0) {
+                const newReviewComments = createReviewComments(issuesToComment);
+                (0, pull_request_1.createPullRequestReview)(newReviewComments);
+            }
         }
         (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
     });
 }
+function createReviewComments(issues) {
+    var _a;
+    const comments = [];
+    for (const issue of issues) {
+        let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
+        if (!length) {
+            length = 'undefined'.length;
+        }
+        const relativePath = issue.mainEventFilePathname.substring(length + 1);
+        comments.push({
+            path: relativePath,
+            body: (0, reporting_1.createMessageFromIssue)(issue),
+            line: issue.mainEventLineNumber,
+            side: 'RIGHT'
+        });
+    }
+    return comments;
+}
+exports.createReviewComments = createReviewComments;
 run();
 
 
@@ -199,20 +241,18 @@ run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getReportableLinesFromDiff = exports.createMessageFromDefect = exports.COMMENT_PREFIX = exports.UNKNOWN_FILE = void 0;
+exports.getReportableLinesFromDiff = exports.createMessageFromIssue = exports.COMMENT_PREFIX = exports.UNKNOWN_FILE = void 0;
 exports.UNKNOWN_FILE = 'Unknown File';
 exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->';
-function createMessageFromDefect(issue) {
+function createMessageFromIssue(issue) {
     const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName;
-    const checkerNameString = issue.checkerProperties ? `
-  _${issue.checkerName}_` : '';
+    const checkerNameString = issue.checkerProperties ? `\r\n_${issue.checkerName}_` : '';
     const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown';
     const cweString = issue.checkerProperties ? `, CWE-${issue.checkerProperties.cweCategory}` : '';
     const mainEvent = issue.events.find(event => event.main === true);
     const mainEventDescription = mainEvent ? mainEvent.eventDescription : '';
     const remediationEvent = issue.events.find(event => event.remediation === true);
-    const remediationString = remediationEvent ? `## How to fix
-  ${remediationEvent.eventDescription}` : '';
+    const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : '';
     let comment = `${exports.COMMENT_PREFIX}
 <!-- ${issue.mergeKey}  -->
 # Coverity Issue - ${issueName}
@@ -224,7 +264,7 @@ ${remediationString}
 `;
     return comment;
 }
-exports.createMessageFromDefect = createMessageFromDefect;
+exports.createMessageFromIssue = createMessageFromIssue;
 function getReportableLinesFromDiff(rawDiff) {
     var _a;
     console.info('Gathering diffs...');

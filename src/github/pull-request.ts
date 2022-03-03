@@ -1,8 +1,6 @@
+import {ExistingReviewComment, ReviewComments} from '../_namespaces/github'
 import {context, getOctokit} from '@actions/github'
 import {GITHUB_TOKEN} from '../inputs'
-import {IssueOccurrence} from '../json-v7-schema'
-import {ReviewComments} from '../_namespaces/github'
-import {createMessageFromDefect} from '../reporting'
 import {getPullRequestNumber} from './github-context'
 
 export async function getPullRequestDiff(): Promise<string> {
@@ -26,24 +24,32 @@ export async function getPullRequestDiff(): Promise<string> {
   return response.data as unknown as string
 }
 
-export function createReviewComments(issues: IssueOccurrence[]): ReviewComments {
-  const comments: ReviewComments = []
-  for (const issue of issues) {
-    let length = process.env.GITHUB_WORKSPACE?.length
-    if (!length) {
-      length = 'undefined'.length
-    }
+export async function getExistingReviewComments(): Promise<ExistingReviewComment[]> {
+  const octokit = getOctokit(GITHUB_TOKEN)
 
-    const relativePath = issue.mainEventFilePathname.substring(length + 1)
-
-    comments.push({
-      path: relativePath,
-      body: createMessageFromDefect(issue),
-      line: issue.mainEventLineNumber,
-      side: 'RIGHT'
-    })
+  const pullRequestNumber = getPullRequestNumber()
+  if (!pullRequestNumber) {
+    return Promise.reject(Error('Could not create Pull Request Review Comment: Action was not running on a Pull Request'))
   }
-  return comments
+
+  const reviewCommentsResponse = await octokit.rest.pulls.listReviewComments({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    pull_number: pullRequestNumber
+  })
+
+  return reviewCommentsResponse.data
+}
+
+export async function updateExistingReviewComment(commentId: number, body: string): Promise<void> {
+  const octokit = getOctokit(GITHUB_TOKEN)
+
+  octokit.rest.pulls.updateReviewComment({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    comment_id: commentId,
+    body
+  })
 }
 
 export async function createPullRequestReview(comments: ReviewComments): Promise<void> {
