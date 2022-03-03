@@ -14,7 +14,7 @@ export function createMessageFromIssue(issue: IssueOccurrence): string {
   const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : ''
 
   let comment = `${COMMENT_PREFIX}
-<!-- ${issue.mergeKey}  -->
+<!-- ${issue.mergeKey} -->
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 

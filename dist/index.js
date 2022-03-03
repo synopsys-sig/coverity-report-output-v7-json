@@ -254,7 +254,7 @@ function createMessageFromIssue(issue) {
     const remediationEvent = issue.events.find(event => event.remediation === true);
     const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : '';
     let comment = `${exports.COMMENT_PREFIX}
-<!-- ${issue.mergeKey}  -->
+<!-- ${issue.mergeKey} -->
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 
