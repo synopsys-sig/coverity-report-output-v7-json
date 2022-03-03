@@ -4,14 +4,29 @@ export const UNKNOWN_FILE = 'Unknown File'
 export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->'
 
 export function createMessageFromDefect(issue: IssueOccurrence): string {
+  const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName
+  const checkerNameString = issue.checkerProperties
+    ? `
+  _${issue.checkerName}_`
+    : ''
+  const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown'
+  const cweString = issue.checkerProperties ? `, CWE-${issue.checkerProperties.cweCategory}` : ''
+  const mainEvent = issue.events.find(event => event.main === true)
+  const mainEventDescription = mainEvent ? mainEvent.eventDescription : ''
+  const remediationEvent = issue.events.find(event => event.remediation === true)
+  const remediationString = remediationEvent
+    ? `## How to fix
+  ${remediationEvent.eventDescription}`
+    : ''
+
   let comment = `${COMMENT_PREFIX}
 <!-- ${issue.mergeKey}  -->
-Coverity found issue: ${issue.checkerProperties?.subcategoryShortDescription ? `${issue.checkerProperties.subcategoryShortDescription} (${issue.checkerName})` : issue.checkerName} - ${issue.checkerProperties?.impact}, ${issue.checkerProperties?.cweCategory}
+# Coverity Issue - ${issueName}
+${mainEventDescription}
 
-<b>${issue.events.filter(event => event.main === true)[0]?.eventDescription}</b>
+_${impactString} Impact${cweString}_${checkerNameString}
 
-How to fix:
-${issue.events.filter(event => event.remediation === true)[0]?.eventDescription}
+${remediationString}
 `
 
   return comment

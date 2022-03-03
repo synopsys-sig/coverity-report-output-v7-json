@@ -203,15 +203,24 @@ exports.getReportableLinesFromDiff = exports.createMessageFromDefect = exports.C
 exports.UNKNOWN_FILE = 'Unknown File';
 exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->';
 function createMessageFromDefect(issue) {
-    var _a, _b, _c, _d, _e;
+    const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName;
+    const checkerNameString = issue.checkerProperties ? `
+  _${issue.checkerName}_` : '';
+    const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown';
+    const cweString = issue.checkerProperties ? `, CWE-${issue.checkerProperties.cweCategory}` : '';
+    const mainEvent = issue.events.find(event => event.main === true);
+    const mainEventDescription = mainEvent ? mainEvent.eventDescription : '';
+    const remediationEvent = issue.events.find(event => event.remediation === true);
+    const remediationString = remediationEvent ? `## How to fix
+  ${remediationEvent.eventDescription}` : '';
     let comment = `${exports.COMMENT_PREFIX}
 <!-- ${issue.mergeKey}  -->
-Coverity found issue: ${((_a = issue.checkerProperties) === null || _a === void 0 ? void 0 : _a.subcategoryShortDescription) ? `${issue.checkerProperties.subcategoryShortDescription} (${issue.checkerName})` : issue.checkerName} - ${(_b = issue.checkerProperties) === null || _b === void 0 ? void 0 : _b.impact}, ${(_c = issue.checkerProperties) === null || _c === void 0 ? void 0 : _c.cweCategory}
+# Coverity Issue - ${issueName}
+${mainEventDescription}
 
-<b>${(_d = issue.events.filter(event => event.main === true)[0]) === null || _d === void 0 ? void 0 : _d.eventDescription}</b>
+_${impactString} Impact${cweString}_${checkerNameString}
 
-How to fix:
-${(_e = issue.events.filter(event => event.remediation === true)[0]) === null || _e === void 0 ? void 0 : _e.eventDescription}
+${remediationString}
 `;
     return comment;
 }
