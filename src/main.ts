@@ -34,8 +34,8 @@ async function run(): Promise<void> {
             console.info('It does! Adding to review.')
             const commentToUpdate = existingReviewComments
               .filter(comment => comment.line === issue.mainEventLineNumber)
-              .filter(comment => comment.body.split('\r\n')[0].includes(COMMENT_PREFIX))
-              .find(comment => comment.body.split('\r\n')[1].includes(`<!-- ${issue.mergeKey} -->`))
+              .filter(comment => comment.body.includes(COMMENT_PREFIX))
+              .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`))
 
             const commentBody = createMessageFromIssue(issue)
 

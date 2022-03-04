@@ -191,8 +191,8 @@ function run() {
                             console.info('It does! Adding to review.');
                             const commentToUpdate = existingReviewComments
                                 .filter(comment => comment.line === issue.mainEventLineNumber)
-                                .filter(comment => comment.body.split('\r\n')[0].includes(reporting_1.COMMENT_PREFIX))
-                                .find(comment => comment.body.split('\r\n')[1].includes(`<!-- ${issue.mergeKey} -->`));
+                                .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFIX))
+                                .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`));
                             const commentBody = (0, reporting_1.createMessageFromIssue)(issue);
                             if (commentToUpdate) {
                                 (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, commentBody);
