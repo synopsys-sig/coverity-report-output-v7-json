@@ -1,7 +1,10 @@
+import {getSha, relativizePath} from './github/github-context'
 import {IssueOccurrence} from './json-v7-schema'
 
 export const UNKNOWN_FILE = 'Unknown File'
-export const COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->'
+export const COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->'
+
+export const mergeKeyCommentOf = (issue: IssueOccurrence): string => `<!-- ${issue.mergeKey} -->`
 
 export function createMessageFromIssue(issue: IssueOccurrence): string {
   const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName
@@ -13,8 +16,8 @@ export function createMessageFromIssue(issue: IssueOccurrence): string {
   const remediationEvent = issue.events.find(event => event.remediation === true)
   const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : ''
 
-  let comment = `${COMMENT_PREFIX}
-<!-- ${issue.mergeKey} -->
+  return `${COMMENT_PREFACE}
+${mergeKeyCommentOf(issue)}
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 
@@ -22,13 +25,22 @@ _${impactString} Impact${cweString}_${checkerNameString}
 
 ${remediationString}
 `
-
-  return comment
 }
 
-export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]> {
+export function createMessageFromIssueWithLineInformation(issue: IssueOccurrence): string {
+  const message = createMessageFromIssue(issue)
+  const relativePath = relativizePath(issue.mainEventFilePathname)
+
+  return `${message}
+## Issue location
+This issue was discovered outside the diff for this Pull Request. You can find it at:
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${getSha()}/${relativePath}#L${issue.mainEventLineNumber})
+`
+}
+
+export function getDiffMap(rawDiff: string): DiffMap {
   console.info('Gathering diffs...')
-  const reportableLineMap: Map<string, Hunk[]> = new Map()
+  const diffMap = new Map()
 
   let path = UNKNOWN_FILE
   for (const line of rawDiff.split('\n')) {
@@ -39,7 +51,7 @@ export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]>
         path = UNKNOWN_FILE
       }
 
-      reportableLineMap.set(path, [])
+      diffMap.set(path, [])
     }
 
     if (line.startsWith('@@')) {
@@ -56,17 +68,19 @@ export function getReportableLinesFromDiff(rawDiff: string): Map<string, Hunk[]>
         const lineCount = parseInt(linesAddedString.substring(separatorPosition + 1))
         const endLine = startLine + lineCount - 1
 
-        if (!reportableLineMap.has(path)) {
-          reportableLineMap.set(path, [])
+        if (!diffMap.has(path)) {
+          diffMap.set(path, [])
         }
         console.info(`Added ${path}: ${startLine} to ${endLine}`)
-        reportableLineMap.get(path)?.push({firstLine: startLine, lastLine: endLine})
+        diffMap.get(path)?.push({firstLine: startLine, lastLine: endLine})
       }
     }
   }
 
-  return reportableLineMap
+  return diffMap
 }
+
+export type DiffMap = Map<string, Hunk[]>
 
 export interface Hunk {
   firstLine: number

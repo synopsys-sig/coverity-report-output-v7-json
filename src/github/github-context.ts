@@ -30,3 +30,12 @@ export function getPullRequestNumber(): number | undefined {
 
   return pr_number
 }
+
+export function relativizePath(path: string): string {
+  let length = process.env.GITHUB_WORKSPACE?.length
+  if (!length) {
+    length = 'undefined'.length
+  }
+
+  return path.substring(length + 1)
+}

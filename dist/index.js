@@ -7,7 +7,7 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPullRequestNumber = exports.getSha = exports.isPullRequest = void 0;
+exports.relativizePath = exports.getPullRequestNumber = exports.getSha = exports.isPullRequest = void 0;
 const github_1 = __nccwpck_require__(5438);
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment'];
 function isPullRequest() {
@@ -36,6 +36,15 @@ function getPullRequestNumber() {
     return pr_number;
 }
 exports.getPullRequestNumber = getPullRequestNumber;
+function relativizePath(path) {
+    var _a;
+    let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
+    if (!length) {
+        length = 'undefined'.length;
+    }
+    return path.substring(length + 1);
+}
+exports.relativizePath = relativizePath;
 
 
 /***/ }),
@@ -55,7 +64,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createPullRequestReview = exports.updateExistingReviewComment = exports.getExistingReviewComments = exports.getPullRequestDiff = void 0;
+exports.createIssueComment = exports.updateExistingIssueComment = exports.getExistingIssueComments = exports.createReview = exports.updateExistingReviewComment = exports.getExistingReviewComments = exports.getPullRequestDiff = void 0;
 const github_1 = __nccwpck_require__(5438);
 const inputs_1 = __nccwpck_require__(6180);
 const github_context_1 = __nccwpck_require__(4915);
@@ -106,7 +115,7 @@ function updateExistingReviewComment(commentId, body) {
     });
 }
 exports.updateExistingReviewComment = updateExistingReviewComment;
-function createPullRequestReview(comments) {
+function createReview(comments, event = "COMMENT") {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
         const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
@@ -117,12 +126,49 @@ function createPullRequestReview(comments) {
             owner: github_1.context.repo.owner,
             repo: github_1.context.repo.repo,
             pull_number: pullRequestNumber,
-            event: 'COMMENT',
+            event,
             comments
         });
     });
 }
-exports.createPullRequestReview = createPullRequestReview;
+exports.createReview = createReview;
+function getExistingIssueComments() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        const { data: existingComments } = yield octokit.rest.issues.listComments({
+            issue_number: github_1.context.issue.number,
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo
+        });
+        return existingComments;
+    });
+}
+exports.getExistingIssueComments = getExistingIssueComments;
+function updateExistingIssueComment(commentId, body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        octokit.rest.issues.updateComment({
+            issue_number: github_1.context.issue.number,
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            comment_id: commentId,
+            body
+        });
+    });
+}
+exports.updateExistingIssueComment = updateExistingIssueComment;
+function createIssueComment(body) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
+        octokit.rest.issues.createComment({
+            issue_number: github_1.context.issue.number,
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            body
+        });
+    });
+}
+exports.createIssueComment = createIssueComment;
 
 
 /***/ }),
@@ -159,15 +205,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createReviewComment = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const pull_request_1 = __nccwpck_require__(709);
-const github_context_1 = __nccwpck_require__(4915);
 const reporting_1 = __nccwpck_require__(5036);
+const github_context_1 = __nccwpck_require__(4915);
 const inputs_1 = __nccwpck_require__(6180);
 const core_1 = __nccwpck_require__(2186);
 function run() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
         // TODO validate file exists and is .json?
@@ -176,62 +220,76 @@ function run() {
         if ((0, github_context_1.isPullRequest)()) {
             const newReviewComments = [];
             const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();
-            const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
+            const existingIssueComments = yield (0, pull_request_1.getExistingIssueComments)();
+            const diffMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getDiffMap);
             for (const issue of coverityIssues.issues) {
                 (0, core_1.info)(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
-                const commentBody = (0, reporting_1.createMessageFromIssue)(issue);
-                const inDiff = (_a = reportableLineMap.get(issue.mainEventFilePathname)) === null || _a === void 0 ? void 0 : _a.filter(hunk => hunk.firstLine <= issue.mainEventLineNumber).some(hunk => issue.mainEventLineNumber <= hunk.lastLine);
-                if (inDiff !== undefined && inDiff) {
-                    const commentToUpdate = existingReviewComments.filter(comment => comment.line === issue.mainEventLineNumber)
-                        .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFIX))
-                        .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`));
-                    if (commentToUpdate !== undefined) {
-                        (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, commentBody);
-                    }
-                    else {
-                        newReviewComments.push(createReviewComment(issue, commentBody));
-                    }
+                const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
+                const reviewCommentBody = (0, reporting_1.createMessageFromIssue)(issue);
+                const issueCommentBody = (0, reporting_1.createMessageFromIssueWithLineInformation)(issue);
+                const existingMatchingReviewComment = existingReviewComments
+                    .filter(comment => comment.line === issue.mainEventLineNumber)
+                    .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE))
+                    .find(comment => comment.body.includes(mergeKeyComment));
+                const existingMatchingIssueComment = existingIssueComments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); })
+                    .find(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
+                if (existingMatchingReviewComment !== undefined) {
+                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`);
+                    (0, pull_request_1.updateExistingReviewComment)(existingMatchingReviewComment.id, reviewCommentBody);
+                }
+                else if (existingMatchingIssueComment !== undefined) {
+                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating...`);
+                    (0, pull_request_1.updateExistingIssueComment)(existingMatchingIssueComment.id, issueCommentBody);
+                }
+                else if (isInDiff(issue, diffMap)) {
+                    (0, core_1.info)('Issue not reported, adding a comment to the review.');
+                    newReviewComments.push(createReviewComment(issue, reviewCommentBody));
                 }
                 else {
-                    // Create separate comment
+                    (0, core_1.info)('Issue not reported, adding an issue comment.');
+                    (0, pull_request_1.createIssueComment)(issueCommentBody);
                 }
             }
             if (newReviewComments.length > 0) {
-                (0, pull_request_1.createPullRequestReview)(newReviewComments);
+                (0, core_1.info)('Publishing review...');
+                (0, pull_request_1.createReview)(newReviewComments);
             }
         }
         (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
     });
 }
-function createReviewComment(issue, commentBody) {
-    var _a;
-    let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
-    if (!length) {
-        length = 'undefined'.length;
+function isInDiff(issue, diffMap) {
+    const diffHunks = diffMap.get(issue.mainEventFilePathname);
+    if (!diffHunks) {
+        return false;
     }
-    const relativePath = issue.mainEventFilePathname.substring(length + 1);
+    return diffHunks.filter(hunk => hunk.firstLine <= issue.mainEventLineNumber).some(hunk => issue.mainEventLineNumber <= hunk.lastLine);
+}
+function createReviewComment(issue, commentBody) {
     return {
-        path: relativePath,
+        path: (0, github_context_1.relativizePath)(issue.mainEventFilePathname),
         body: commentBody,
         line: issue.mainEventLineNumber,
         side: 'RIGHT'
     };
 }
-exports.createReviewComment = createReviewComment;
 run();
 
 
 /***/ }),
 
 /***/ 5036:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getReportableLinesFromDiff = exports.createMessageFromIssue = exports.COMMENT_PREFIX = exports.UNKNOWN_FILE = void 0;
+exports.getDiffMap = exports.createMessageFromIssueWithLineInformation = exports.createMessageFromIssue = exports.mergeKeyCommentOf = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = void 0;
+const github_context_1 = __nccwpck_require__(4915);
 exports.UNKNOWN_FILE = 'Unknown File';
-exports.COMMENT_PREFIX = '<!-- coverity-report-output-v7 -->';
+exports.COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->';
+const mergeKeyCommentOf = (issue) => `<!-- ${issue.mergeKey} -->`;
+exports.mergeKeyCommentOf = mergeKeyCommentOf;
 function createMessageFromIssue(issue) {
     const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName;
     const checkerNameString = issue.checkerProperties ? `\r\n_${issue.checkerName}_` : '';
@@ -241,8 +299,8 @@ function createMessageFromIssue(issue) {
     const mainEventDescription = mainEvent ? mainEvent.eventDescription : '';
     const remediationEvent = issue.events.find(event => event.remediation === true);
     const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : '';
-    let comment = `${exports.COMMENT_PREFIX}
-<!-- ${issue.mergeKey} -->
+    return `${exports.COMMENT_PREFACE}
+${(0, exports.mergeKeyCommentOf)(issue)}
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 
@@ -250,13 +308,22 @@ _${impactString} Impact${cweString}_${checkerNameString}
 
 ${remediationString}
 `;
-    return comment;
 }
 exports.createMessageFromIssue = createMessageFromIssue;
-function getReportableLinesFromDiff(rawDiff) {
+function createMessageFromIssueWithLineInformation(issue) {
+    const message = createMessageFromIssue(issue);
+    const relativePath = (0, github_context_1.relativizePath)(issue.mainEventFilePathname);
+    return `${message}
+## Issue location
+This issue was discovered outside the diff for this Pull Request. You can find it at:
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${(0, github_context_1.getSha)()}/${relativePath}#L${issue.mainEventLineNumber})
+`;
+}
+exports.createMessageFromIssueWithLineInformation = createMessageFromIssueWithLineInformation;
+function getDiffMap(rawDiff) {
     var _a;
     console.info('Gathering diffs...');
-    const reportableLineMap = new Map();
+    const diffMap = new Map();
     let path = exports.UNKNOWN_FILE;
     for (const line of rawDiff.split('\n')) {
         if (line.startsWith('diff --git')) {
@@ -265,7 +332,7 @@ function getReportableLinesFromDiff(rawDiff) {
             if (path === undefined) {
                 path = exports.UNKNOWN_FILE;
             }
-            reportableLineMap.set(path, []);
+            diffMap.set(path, []);
         }
         if (line.startsWith('@@')) {
             let changedLines = line.substring(3);
@@ -278,17 +345,17 @@ function getReportableLinesFromDiff(rawDiff) {
                 const startLine = parseInt(linesAddedString.substring(0, separatorPosition));
                 const lineCount = parseInt(linesAddedString.substring(separatorPosition + 1));
                 const endLine = startLine + lineCount - 1;
-                if (!reportableLineMap.has(path)) {
-                    reportableLineMap.set(path, []);
+                if (!diffMap.has(path)) {
+                    diffMap.set(path, []);
                 }
                 console.info(`Added ${path}: ${startLine} to ${endLine}`);
-                (_a = reportableLineMap.get(path)) === null || _a === void 0 ? void 0 : _a.push({ firstLine: startLine, lastLine: endLine });
+                (_a = diffMap.get(path)) === null || _a === void 0 ? void 0 : _a.push({ firstLine: startLine, lastLine: endLine });
             }
         }
     }
-    return reportableLineMap;
+    return diffMap;
 }
-exports.getReportableLinesFromDiff = getReportableLinesFromDiff;
+exports.getDiffMap = getDiffMap;
 
 
 /***/ }),

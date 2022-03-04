@@ -9,3 +9,6 @@ export type NewReviewComment = (ReviewCommentsParameter & Exclude<ReviewComments
 
 // @octokit/rest > Endpoints.d.ts > /repos/{owner}/{repo}/pulls/{pull_number}/comments
 export type ExistingReviewComment = RestEndpointMethodTypes['pulls']['listReviewComments']['response']['data'][number]
+
+// @octokit/rest > Endpoints.d.ts > /repos/{owner}/{repo}/issues/{issue_number}/comments
+export type ExistingIssueComment = RestEndpointMethodTypes['issues']['listComments']['response']['data'][number]

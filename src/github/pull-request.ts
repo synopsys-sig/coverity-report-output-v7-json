@@ -1,4 +1,4 @@
-import {ExistingReviewComment, NewReviewComment} from '../_namespaces/github'
+import {ExistingIssueComment, ExistingReviewComment, NewReviewComment} from '../_namespaces/github'
 import {context, getOctokit} from '@actions/github'
 import {GITHUB_TOKEN} from '../inputs'
 import {getPullRequestNumber} from './github-context'
@@ -52,7 +52,7 @@ export async function updateExistingReviewComment(commentId: number, body: strin
   })
 }
 
-export async function createPullRequestReview(comments: NewReviewComment[]): Promise<void> {
+export async function createReview(comments: NewReviewComment[], event: 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT' = 'COMMENT'): Promise<void> {
   const octokit = getOctokit(GITHUB_TOKEN)
 
   const pullRequestNumber = getPullRequestNumber()
@@ -64,7 +64,42 @@ export async function createPullRequestReview(comments: NewReviewComment[]): Pro
     owner: context.repo.owner,
     repo: context.repo.repo,
     pull_number: pullRequestNumber,
-    event: 'COMMENT',
+    event,
     comments
+  })
+}
+
+export async function getExistingIssueComments(): Promise<ExistingIssueComment[]> {
+  const octokit = getOctokit(GITHUB_TOKEN)
+
+  const {data: existingComments} = await octokit.rest.issues.listComments({
+    issue_number: context.issue.number,
+    owner: context.repo.owner,
+    repo: context.repo.repo
+  })
+
+  return existingComments
+}
+
+export async function updateExistingIssueComment(commentId: number, body: string): Promise<void> {
+  const octokit = getOctokit(GITHUB_TOKEN)
+
+  octokit.rest.issues.updateComment({
+    issue_number: context.issue.number,
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    comment_id: commentId,
+    body
+  })
+}
+
+export async function createIssueComment(body: string): Promise<void> {
+  const octokit = getOctokit(GITHUB_TOKEN)
+
+  octokit.rest.issues.createComment({
+    issue_number: context.issue.number,
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    body
   })
 }
