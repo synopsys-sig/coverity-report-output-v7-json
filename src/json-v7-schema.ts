@@ -61,7 +61,7 @@ export interface CheckerProperties {
   impactDescription: string
   subcategoryLocalEffect: string
   subcategoryLongDescription: string
-  subcategroyShortDescription: string
+  subcategoryShortDescription: string
   MISRACategory?: string
 }
 
