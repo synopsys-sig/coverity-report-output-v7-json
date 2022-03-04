@@ -167,6 +167,7 @@ const reporting_1 = __nccwpck_require__(5036);
 const inputs_1 = __nccwpck_require__(6180);
 const core_1 = __nccwpck_require__(2186);
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
         // TODO validate file exists and is .json?
@@ -175,32 +176,20 @@ function run() {
         if ((0, github_context_1.isPullRequest)()) {
             const newReviewComments = [];
             const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();
-            if (existingReviewComments.length > 0) {
-                (0, core_1.info)('Found existing review comments:');
-                existingReviewComments.forEach(comment => console.log(comment.id, comment.body.split('\r\n')[0], comment.body.split('\r\n')[1]));
-            }
             const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
             for (const issue of coverityIssues.issues) {
-                console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
-                const reportableHunks = reportableLineMap.get(issue.mainEventFilePathname);
-                if (reportableHunks !== undefined) {
-                    console.info('File is in the diff!');
-                    for (const hunk of reportableHunks) {
-                        console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
-                        if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
-                            console.info('It does! Adding to review.');
-                            const commentToUpdate = existingReviewComments
-                                .filter(comment => comment.line === issue.mainEventLineNumber)
-                                .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFIX))
-                                .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`));
-                            const commentBody = (0, reporting_1.createMessageFromIssue)(issue);
-                            if (commentToUpdate) {
-                                (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, commentBody);
-                            }
-                            else {
-                                newReviewComments.push(createReviewComment(issue, commentBody));
-                            }
-                        }
+                (0, core_1.info)(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
+                const commentBody = (0, reporting_1.createMessageFromIssue)(issue);
+                const inDiff = (_a = reportableLineMap.get(issue.mainEventFilePathname)) === null || _a === void 0 ? void 0 : _a.filter(hunk => hunk.firstLine <= issue.mainEventLineNumber).some(hunk => issue.mainEventLineNumber <= hunk.lastLine);
+                if (inDiff !== undefined && inDiff) {
+                    const commentToUpdate = existingReviewComments.filter(comment => comment.line === issue.mainEventLineNumber)
+                        .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFIX))
+                        .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`));
+                    if (commentToUpdate !== undefined) {
+                        (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, commentBody);
+                    }
+                    else {
+                        newReviewComments.push(createReviewComment(issue, commentBody));
                     }
                 }
                 else {

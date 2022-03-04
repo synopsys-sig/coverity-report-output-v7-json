@@ -18,33 +18,27 @@ async function run(): Promise<void> {
     const newReviewComments = []
 
     const existingReviewComments = await getExistingReviewComments()
-    if (existingReviewComments.length > 0) {
-      info('Found existing review comments:')
-      existingReviewComments.forEach(comment => console.log(comment.id, comment.body.split('\r\n')[0], comment.body.split('\r\n')[1]))
-    }
     const reportableLineMap = await getPullRequestDiff().then(getReportableLinesFromDiff)
+
     for (const issue of coverityIssues.issues) {
-      console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
-      const reportableHunks = reportableLineMap.get(issue.mainEventFilePathname)
-      if (reportableHunks !== undefined) {
-        console.info('File is in the diff!')
-        for (const hunk of reportableHunks) {
-          console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`)
-          if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
-            console.info('It does! Adding to review.')
-            const commentToUpdate = existingReviewComments
-              .filter(comment => comment.line === issue.mainEventLineNumber)
-              .filter(comment => comment.body.includes(COMMENT_PREFIX))
-              .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`))
+      info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
+      const commentBody = createMessageFromIssue(issue)
 
-            const commentBody = createMessageFromIssue(issue)
+      const inDiff = reportableLineMap
+        .get(issue.mainEventFilePathname)
+        ?.filter(hunk => hunk.firstLine <= issue.mainEventLineNumber)
+        .some(hunk => issue.mainEventLineNumber <= hunk.lastLine)
 
-            if (commentToUpdate) {
-              updateExistingReviewComment(commentToUpdate.id, commentBody)
-            } else {
-              newReviewComments.push(createReviewComment(issue, commentBody))
-            }
-          }
+      if (inDiff !== undefined && inDiff) {
+        const commentToUpdate = existingReviewComments
+          .filter(comment => comment.line === issue.mainEventLineNumber)
+          .filter(comment => comment.body.includes(COMMENT_PREFIX))
+          .find(comment => comment.body.includes(`<!-- ${issue.mergeKey} -->`))
+
+        if (commentToUpdate !== undefined) {
+          updateExistingReviewComment(commentToUpdate.id, commentBody)
+        } else {
+          newReviewComments.push(createReviewComment(issue, commentBody))
         }
       } else {
         // Create separate comment
