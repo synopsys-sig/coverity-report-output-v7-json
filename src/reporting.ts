@@ -1,3 +1,4 @@
+import {context} from '@actions/github'
 import {getSha, relativizePath} from './github/github-context'
 import {IssueOccurrence} from './json-v7-schema'
 
@@ -34,7 +35,7 @@ export function createMessageFromIssueWithLineInformation(issue: IssueOccurrence
   return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
-[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${getSha()}/${relativePath}#L${issue.mainEventLineNumber})
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${context.ref}/${relativePath}#L${issue.mainEventLineNumber})
 `
 }
 

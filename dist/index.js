@@ -115,7 +115,7 @@ function updateExistingReviewComment(commentId, body) {
     });
 }
 exports.updateExistingReviewComment = updateExistingReviewComment;
-function createReview(comments, event = "COMMENT") {
+function createReview(comments, event = 'COMMENT') {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = (0, github_1.getOctokit)(inputs_1.GITHUB_TOKEN);
         const pullRequestNumber = (0, github_context_1.getPullRequestNumber)();
@@ -231,8 +231,7 @@ function run() {
                     .filter(comment => comment.line === issue.mainEventLineNumber)
                     .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE))
                     .find(comment => comment.body.includes(mergeKeyComment));
-                const existingMatchingIssueComment = existingIssueComments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); })
-                    .find(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
+                const existingMatchingIssueComment = existingIssueComments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }).find(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
                 if (existingMatchingReviewComment !== undefined) {
                     (0, core_1.info)(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`);
                     (0, pull_request_1.updateExistingReviewComment)(existingMatchingReviewComment.id, reviewCommentBody);
@@ -285,6 +284,7 @@ run();
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getDiffMap = exports.createMessageFromIssueWithLineInformation = exports.createMessageFromIssue = exports.mergeKeyCommentOf = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = void 0;
+const github_1 = __nccwpck_require__(5438);
 const github_context_1 = __nccwpck_require__(4915);
 exports.UNKNOWN_FILE = 'Unknown File';
 exports.COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->';
@@ -316,7 +316,7 @@ function createMessageFromIssueWithLineInformation(issue) {
     return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
-[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${(0, github_context_1.getSha)()}/${relativePath}#L${issue.mainEventLineNumber})
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${github_1.context.ref}/${relativePath}#L${issue.mainEventLineNumber})
 `;
 }
 exports.createMessageFromIssueWithLineInformation = createMessageFromIssueWithLineInformation;
