@@ -35,7 +35,7 @@ export function createMessageFromIssueWithLineInformation(issue: IssueOccurrence
   return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
-[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${context.ref}/${relativePath}#L${issue.mainEventLineNumber})
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA}/${relativePath}#L${issue.mainEventLineNumber})
 `
 }
 

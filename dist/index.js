@@ -284,7 +284,6 @@ run();
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getDiffMap = exports.createMessageFromIssueWithLineInformation = exports.createMessageFromIssue = exports.mergeKeyCommentOf = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = void 0;
-const github_1 = __nccwpck_require__(5438);
 const github_context_1 = __nccwpck_require__(4915);
 exports.UNKNOWN_FILE = 'Unknown File';
 exports.COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->';
@@ -316,7 +315,7 @@ function createMessageFromIssueWithLineInformation(issue) {
     return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
-[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${github_1.context.ref}/${relativePath}#L${issue.mainEventLineNumber})
+[${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA}/${relativePath}#L${issue.mainEventLineNumber})
 `;
 }
 exports.createMessageFromIssueWithLineInformation = createMessageFromIssueWithLineInformation;
