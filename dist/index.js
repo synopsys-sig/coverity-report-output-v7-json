@@ -159,7 +159,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createReviewComments = void 0;
+exports.createReviewComment = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const pull_request_1 = __nccwpck_require__(709);
 const github_context_1 = __nccwpck_require__(4915);
@@ -173,8 +173,12 @@ function run() {
         const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         if ((0, github_context_1.isPullRequest)()) {
-            const issuesToComment = [];
-            const reviewCommentsPromise = (0, pull_request_1.getExistingReviewComments)();
+            const newReviewComments = [];
+            const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();
+            if (existingReviewComments.length > 0) {
+                (0, core_1.info)('Found existing review comments:');
+                existingReviewComments.forEach(comment => console.log(comment.id, comment.body.split('\r\n')[0], comment.body.split('\r\n')[1]));
+            }
             const reportableLineMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getReportableLinesFromDiff);
             for (const issue of coverityIssues.issues) {
                 console.info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
@@ -185,16 +189,16 @@ function run() {
                         console.info(`Checking if issue takes place between lines ${hunk.firstLine} - ${hunk.lastLine}`);
                         if (hunk.firstLine <= issue.mainEventLineNumber && issue.mainEventLineNumber <= hunk.lastLine) {
                             console.info('It does! Adding to review.');
-                            const reviewComments = yield reviewCommentsPromise;
-                            const commentToUpdate = reviewComments
+                            const commentToUpdate = existingReviewComments
                                 .filter(comment => comment.line === issue.mainEventLineNumber)
-                                .filter(comment => comment.body.split('\r\n')[0] === reporting_1.COMMENT_PREFIX)
-                                .find(comment => comment.body.split('\r\n')[1] === `<!-- ${issue.mergeKey} -->`);
+                                .filter(comment => comment.body.split('\r\n')[0].includes(reporting_1.COMMENT_PREFIX))
+                                .find(comment => comment.body.split('\r\n')[1].includes(`<!-- ${issue.mergeKey} -->`));
+                            const commentBody = (0, reporting_1.createMessageFromIssue)(issue);
                             if (commentToUpdate) {
-                                (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, (0, reporting_1.createMessageFromIssue)(issue));
+                                (0, pull_request_1.updateExistingReviewComment)(commentToUpdate.id, commentBody);
                             }
                             else {
-                                issuesToComment.push(issue);
+                                newReviewComments.push(createReviewComment(issue, commentBody));
                             }
                         }
                     }
@@ -203,33 +207,28 @@ function run() {
                     // Create separate comment
                 }
             }
-            if (issuesToComment.length > 0) {
-                const newReviewComments = createReviewComments(issuesToComment);
+            if (newReviewComments.length > 0) {
                 (0, pull_request_1.createPullRequestReview)(newReviewComments);
             }
         }
         (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
     });
 }
-function createReviewComments(issues) {
+function createReviewComment(issue, commentBody) {
     var _a;
-    const comments = [];
-    for (const issue of issues) {
-        let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
-        if (!length) {
-            length = 'undefined'.length;
-        }
-        const relativePath = issue.mainEventFilePathname.substring(length + 1);
-        comments.push({
-            path: relativePath,
-            body: (0, reporting_1.createMessageFromIssue)(issue),
-            line: issue.mainEventLineNumber,
-            side: 'RIGHT'
-        });
+    let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
+    if (!length) {
+        length = 'undefined'.length;
     }
-    return comments;
+    const relativePath = issue.mainEventFilePathname.substring(length + 1);
+    return {
+        path: relativePath,
+        body: commentBody,
+        line: issue.mainEventLineNumber,
+        side: 'RIGHT'
+    };
 }
-exports.createReviewComments = createReviewComments;
+exports.createReviewComment = createReviewComment;
 run();
 
 

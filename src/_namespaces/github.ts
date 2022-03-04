@@ -4,7 +4,8 @@ import {RestEndpointMethodTypes} from '@octokit/rest'
 export type PullRequest = RestEndpointMethodTypes['pulls']['get']['response']['data']
 
 // @octokit/rest > Endpoints.d.ts > /repos/{owner}/{repo}/pulls/{pull_number}/reviews > comments
-export type ReviewComments = RestEndpointMethodTypes['pulls']['createReview']['parameters']['comments']
+export type ReviewCommentsParameter = RestEndpointMethodTypes['pulls']['createReview']['parameters']['comments']
+export type NewReviewComment = (ReviewCommentsParameter & Exclude<ReviewCommentsParameter, undefined>)[number]
 
 // @octokit/rest > Endpoints.d.ts > /repos/{owner}/{repo}/pulls/{pull_number}/comments
 export type ExistingReviewComment = RestEndpointMethodTypes['pulls']['listReviewComments']['response']['data'][number]

@@ -1,4 +1,4 @@
-import {ExistingReviewComment, ReviewComments} from '../_namespaces/github'
+import {ExistingReviewComment, NewReviewComment} from '../_namespaces/github'
 import {context, getOctokit} from '@actions/github'
 import {GITHUB_TOKEN} from '../inputs'
 import {getPullRequestNumber} from './github-context'
@@ -52,7 +52,7 @@ export async function updateExistingReviewComment(commentId: number, body: strin
   })
 }
 
-export async function createPullRequestReview(comments: ReviewComments): Promise<void> {
+export async function createPullRequestReview(comments: NewReviewComment[]): Promise<void> {
   const octokit = getOctokit(GITHUB_TOKEN)
 
   const pullRequestNumber = getPullRequestNumber()
