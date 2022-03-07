@@ -14,15 +14,3 @@ test('cleanUrl() no trailing slash', () => {
   const cleanUrl = covApi.cleanUrl(testUrl)
   expect(cleanUrl).toBe(testUrl)
 })
-
-test('encodeAuth() valid', () => {
-  const covApi = require('../../src/coverity-api')
-  const base64Result = covApi.encodeAuth('user', 'pass')
-  expect(base64Result).toBe('dXNlcjpwYXNz')
-})
-
-test('encodeAuth() invalid', () => {
-  const covApi = require('../../src/coverity-api')
-  const base64Result = covApi.encodeAuth('user', 'pass')
-  expect(base64Result).not.toBe('user:pass')
-})
