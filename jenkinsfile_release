@@ -1,0 +1,89 @@
+/*
+* This pipeline script was created manually based on scripts created by jenkins-build-creator.
+*
+*/
+@Library('integration-pipeline-library@master')
+import com.synopsys.integration.Constants
+import com.synopsys.integration.pipeline.scm.GitStage
+
+properties(
+    [
+        limitBuildsToKeep(),
+        disableConcurrentBuilds(), 
+        parameters(
+            [
+                releaseCheckbox(),
+                releaseCommitMessage(),
+                selectBranch('origin/main')
+            ]
+        )
+    ]
+)
+
+pipeline {
+    agent {
+        label 'integrations'
+    }
+    stages {
+        stage('Git') {
+            steps {
+                script {
+                    def branch = params.BRANCH
+                    def localBranch = branch.replace("origin/", "")
+
+                    def gitEnvironment = checkout(
+                        [
+                            $class: 'GitSCM', 
+                            branches: [[name: params.BRANCH]], 
+                            doGenerateSubmoduleConfigurations: false, 
+                            extensions: [[$class: 'WipeWorkspace'], [$class: 'LocalBranch', localBranch: localBranch]], 
+                            gitTool: 'Default', 
+                            submoduleCfg: [], 
+                            userRemoteConfigs: [[credentialsId: GitStage.DEFAULT_CREDENTIALS_ID, url: 'https://github.com/synopsys-sig/coverity-report-output-v7-json.git']]
+                        ]
+                    )
+                    
+                    env.GIT_URL = gitEnvironment.GIT_URL
+                    println "GIT_URL: ${env.GIT_URL}"
+                    env.GIT_LOCAL_BRANCH = gitEnvironment.GIT_LOCAL_BRANCH
+                    println "GIT_LOCAL_BRANCH: ${env.GIT_URL}"
+                }
+            }
+        }
+        stage('Release') {
+            when {
+                allOf {
+                    expression { return params.RUN_RELEASE }
+                    not { branch 'main' }
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: GitStage.DEFAULT_CREDENTIALS_ID, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    sh "git branch -u origin/${env.GIT_LOCAL_BRANCH}"
+                    sh "git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/synopsys-sig/coverity-report-output-v7-json.git"
+                }
+                sh 'npm ci'
+                sh "npm version ${env.GIT_LOCAL_BRANCH}"
+                archiveArtifacts 'dist/*.js*'
+            }
+        }
+    }
+    post {
+        failure {
+            echo 'Sending out Build Failure email'
+            emailext(
+                body: '$DEFAULT_CONTENT', 
+                subject: '$DEFAULT_SUBJECT', 
+                to: Constants.CENTRAL_INTEGRATIONS_TEAM_EMAIL
+            )
+        } 
+        fixed {
+            echo 'Sending out Build Fixed email'
+            emailext(
+                body: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - Fixed!\nCheck console output at ${env.BUILD_URL} to view the results.", 
+                subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - Fixed!", 
+                to: Constants.CENTRAL_INTEGRATIONS_TEAM_EMAIL
+            )
+        }
+    }
+}
