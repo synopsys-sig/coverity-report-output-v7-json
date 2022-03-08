@@ -4,7 +4,6 @@
 */
 @Library('integration-pipeline-library@ro-common-stages')
 import com.synopsys.integration.Constants
-import com.synopsys.integration.pipeline.scm.GitStage
 
 properties(
     [
@@ -25,7 +24,9 @@ pipeline {
         label 'integrations'
     }
     stages {
-        checkoutAndExportGitEnvironment('https://github.com/synopsys-sig/coverity-report-output-v7-json.git'){}
+        stage('Git') {
+            gitCheckoutExportVariables('https://github.com/synopsys-sig/coverity-report-output-v7-json.git')
+        }
         stage('Release') {
             when {
                 allOf {
