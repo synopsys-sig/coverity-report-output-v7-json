@@ -301,6 +301,69 @@ exports.COVERITY_PASSWORD = (0, core_1.getInput)('coverity-password');
 
 /***/ }),
 
+/***/ 7953:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.mapMergeKeys = exports.ProjectIssue = void 0;
+const coverity_api_1 = __nccwpck_require__(3777);
+class ProjectIssue {
+    constructor(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId) {
+        this.cid = cid;
+        this.mergeKey = mergeKey;
+        this.action = action;
+        this.classification = classification;
+        this.firstSnapshotId = firstSnapshotId;
+        this.lastSnapshotId = lastSnapshotId;
+    }
+}
+exports.ProjectIssue = ProjectIssue;
+function mapMergeKeys(projectIssues) {
+    const mergeKeyToProjectIssue = new Map();
+    if (projectIssues == null) {
+        return mergeKeyToProjectIssue;
+    }
+    for (const issue of projectIssues.rows) {
+        let cid = '';
+        let mergeKey = null;
+        let action = '';
+        let classification = '';
+        let firstSnapshotId = '';
+        let lastSnapshotId = '';
+        for (const issueCol of issue) {
+            if (issueCol.key == coverity_api_1.KEY_CID) {
+                cid = issueCol.value;
+            }
+            else if (issueCol.key == coverity_api_1.KEY_MERGE_KEY) {
+                mergeKey = issueCol.value;
+            }
+            else if (issueCol.key == coverity_api_1.KEY_ACTION) {
+                action = issueCol.value;
+            }
+            else if (issueCol.key == coverity_api_1.KEY_CLASSIFICATION) {
+                classification = issueCol.value;
+            }
+            else if (issueCol.key == coverity_api_1.KEY_FIRST_SNAPSHOT_ID) {
+                firstSnapshotId = issueCol.value;
+            }
+            else if (issueCol.key == coverity_api_1.KEY_LAST_SNAPSHOT_ID) {
+                lastSnapshotId = issueCol.value;
+            }
+        }
+        if (mergeKey != null) {
+            const newIssue = new ProjectIssue(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId);
+            mergeKeyToProjectIssue.set(mergeKey, newIssue);
+        }
+    }
+    return mergeKeyToProjectIssue;
+}
+exports.mapMergeKeys = mapMergeKeys;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -326,6 +389,7 @@ const github_context_1 = __nccwpck_require__(4915);
 const inputs_1 = __nccwpck_require__(6180);
 const core_1 = __nccwpck_require__(2186);
 const coverity_api_1 = __nccwpck_require__(3777);
+const issue_mapper_1 = __nccwpck_require__(7953);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!(0, github_context_1.isPullRequest)()) {
@@ -350,7 +414,7 @@ function run() {
                 .then(result => (covProjectIssues = result))
                 .catch(error => (0, core_1.setFailed)(error));
             (0, core_1.info)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.totalRows} potentially matching issues on the server`);
-            mergeKeyToIssue = mapMergeKeys(covProjectIssues);
+            mergeKeyToIssue = (0, issue_mapper_1.mapMergeKeys)(covProjectIssues);
         }
         const newReviewComments = [];
         const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();
@@ -363,7 +427,7 @@ function run() {
             let newOnServer = true;
             if (projectIssue) {
                 ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional'];
-                newOnServer = projectIssue.firstSnapshotId == projectIssue.lastDetectedId;
+                newOnServer = projectIssue.firstSnapshotId == projectIssue.lastSnapshotId;
                 (0, core_1.info)(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`);
             }
             const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
@@ -418,55 +482,6 @@ function createReviewComment(issue, commentBody) {
         line: issue.mainEventLineNumber,
         side: 'RIGHT'
     };
-}
-class ProjectIssue {
-    constructor(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId) {
-        this.cid = cid;
-        this.mergeKey = mergeKey;
-        this.action = action;
-        this.classification = classification;
-        this.firstSnapshotId = firstSnapshotId;
-        this.lastSnapshotId = lastSnapshotId;
-    }
-}
-function mapMergeKeys(projectIssues) {
-    const mergeKeyToProjectIssue = new Map();
-    if (projectIssues == null) {
-        return mergeKeyToProjectIssue;
-    }
-    for (const issue of projectIssues.rows) {
-        let cid = '';
-        let mergeKey = null;
-        let action = '';
-        let classification = '';
-        let firstSnapshotId = '';
-        let lastSnapshotId = '';
-        for (const issueCol of issue) {
-            if (issueCol.key == coverity_api_1.KEY_CID) {
-                cid = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_MERGE_KEY) {
-                mergeKey = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_ACTION) {
-                action = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_CLASSIFICATION) {
-                classification = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_FIRST_SNAPSHOT_ID) {
-                firstSnapshotId = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_LAST_SNAPSHOT_ID) {
-                lastSnapshotId = issueCol.value;
-            }
-        }
-        if (mergeKey != null) {
-            const newIssue = new ProjectIssue(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId);
-            mergeKeyToProjectIssue.set(mergeKey, newIssue);
-        }
-    }
-    return mergeKeyToProjectIssue;
 }
 run();
 

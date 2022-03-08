@@ -7,6 +7,7 @@ import {COVERITY_PASSWORD, COVERITY_PROJECT_NAME, COVERITY_URL, COVERITY_USERNAM
 import {info, setFailed, warning} from '@actions/core'
 import {NewReviewComment} from './_namespaces/github'
 import {CoverityApiService, IIssuesSearchResponse, KEY_ACTION, KEY_CID, KEY_CLASSIFICATION, KEY_FIRST_SNAPSHOT_ID, KEY_LAST_SNAPSHOT_ID, KEY_MERGE_KEY} from './coverity-api'
+import {mapMergeKeys, ProjectIssue} from './issue-mapper'
 
 async function run(): Promise<void> {
   if (!isPullRequest()) {
@@ -25,7 +26,7 @@ async function run(): Promise<void> {
     warning('Missing Coverity Connect info. Issues will not be checked against the server.')
   }
 
-  let mergeKeyToIssue = new Map()
+  let mergeKeyToIssue = new Map<string, ProjectIssue>()
   if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
     let covProjectIssues: IIssuesSearchResponse | any = null
     const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
@@ -51,7 +52,7 @@ async function run(): Promise<void> {
     let newOnServer = true
     if (projectIssue) {
       ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional']
-      newOnServer = projectIssue.firstSnapshotId == projectIssue.lastDetectedId
+      newOnServer = projectIssue.firstSnapshotId == projectIssue.lastSnapshotId
       info(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`)
     }
 
@@ -110,60 +111,6 @@ function createReviewComment(issue: IssueOccurrence, commentBody: string): NewRe
     line: issue.mainEventLineNumber,
     side: 'RIGHT'
   }
-}
-
-class ProjectIssue {
-  cid: string
-  mergeKey: string
-  action: string
-  classification: string
-  firstSnapshotId: string
-  lastSnapshotId: string
-
-  constructor(cid: string, mergeKey: string, action: string, classification: string, firstSnapshotId: string, lastSnapshotId: string) {
-    this.cid = cid
-    this.mergeKey = mergeKey
-    this.action = action
-    this.classification = classification
-    this.firstSnapshotId = firstSnapshotId
-    this.lastSnapshotId = lastSnapshotId
-  }
-}
-
-function mapMergeKeys(projectIssues: IIssuesSearchResponse | null): Map<string, ProjectIssue> {
-  const mergeKeyToProjectIssue = new Map<string, ProjectIssue>()
-  if (projectIssues == null) {
-    return mergeKeyToProjectIssue
-  }
-
-  for (const issue of projectIssues.rows) {
-    let cid = ''
-    let mergeKey = null
-    let action = ''
-    let classification = ''
-    let firstSnapshotId = ''
-    let lastSnapshotId = ''
-    for (const issueCol of issue) {
-      if (issueCol.key == KEY_CID) {
-        cid = issueCol.value
-      } else if (issueCol.key == KEY_MERGE_KEY) {
-        mergeKey = issueCol.value
-      } else if (issueCol.key == KEY_ACTION) {
-        action = issueCol.value
-      } else if (issueCol.key == KEY_CLASSIFICATION) {
-        classification = issueCol.value
-      } else if (issueCol.key == KEY_FIRST_SNAPSHOT_ID) {
-        firstSnapshotId = issueCol.value
-      } else if (issueCol.key == KEY_LAST_SNAPSHOT_ID) {
-        lastSnapshotId = issueCol.value
-      }
-    }
-    if (mergeKey != null) {
-      const newIssue = new ProjectIssue(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId)
-      mergeKeyToProjectIssue.set(mergeKey, newIssue)
-    }
-  }
-  return mergeKeyToProjectIssue
 }
 
 run()
