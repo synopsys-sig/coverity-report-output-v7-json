@@ -336,15 +336,19 @@ function run() {
         // TODO validate file exists and is .json?
         const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
         const coverityIssues = JSON.parse(jsonV7Content.toString());
+        const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
+        if (!canCheckCoverity) {
+            (0, core_1.warning)('Missing Coverity Connect info. Issues will not be checked against the server.');
+        }
         let mergeKeyToIssue = new Map();
-        if (coverityIssues && coverityIssues.issues.length > 0) {
+        if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
             let covProjectIssues = null;
             const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
             // TODO page through issues?
             apiService
                 .findIssues(inputs_1.COVERITY_PROJECT_NAME, 0, 500)
                 .then(result => (covProjectIssues = result))
-                .catch(error => fail(error));
+                .catch(error => (0, core_1.setFailed)(error));
             mergeKeyToIssue = mapMergeKeys(covProjectIssues);
         }
         const newReviewComments = [];
@@ -353,6 +357,13 @@ function run() {
         const diffMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getDiffMap);
         for (const issue of coverityIssues.issues) {
             (0, core_1.info)(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
+            const projectIssue = mergeKeyToIssue.get(issue.mergeKey);
+            let ignoredOnServer = false;
+            let newOnServer = true;
+            if (projectIssue) {
+                ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional'];
+                newOnServer = projectIssue.firstSnapshotId == projectIssue.lastDetectedId;
+            }
             const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
             const reviewCommentBody = (0, reporting_1.createMessageFromIssue)(issue);
             const issueCommentBody = (0, reporting_1.createMessageFromIssueWithLineInformation)(issue);
@@ -372,6 +383,12 @@ function run() {
             else if (isInDiff(issue, diffMap)) {
                 (0, core_1.info)('Issue not reported, adding a comment to the review.');
                 newReviewComments.push(createReviewComment(issue, reviewCommentBody));
+            }
+            else if (ignoredOnServer) {
+                (0, core_1.info)('Issue ignored on server, no comment needed.');
+            }
+            else if (!newOnServer) {
+                (0, core_1.info)('Issue already existed on server, no comment needed.');
             }
             else {
                 (0, core_1.info)('Issue not reported, adding an issue comment.');
