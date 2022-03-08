@@ -446,15 +446,15 @@ function run() {
                 (0, core_1.info)(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating...`);
                 (0, pull_request_1.updateExistingIssueComment)(existingMatchingIssueComment.id, issueCommentBody);
             }
-            else if (isInDiff(issue, diffMap)) {
-                (0, core_1.info)('Issue not reported, adding a comment to the review.');
-                newReviewComments.push(createReviewComment(issue, reviewCommentBody));
-            }
             else if (ignoredOnServer) {
                 (0, core_1.info)('Issue ignored on server, no comment needed.');
             }
             else if (!newOnServer) {
                 (0, core_1.info)('Issue already existed on server, no comment needed.');
+            }
+            else if (isInDiff(issue, diffMap)) {
+                (0, core_1.info)('Issue not reported, adding a comment to the review.');
+                newReviewComments.push(createReviewComment(issue, reviewCommentBody));
             }
             else {
                 (0, core_1.info)('Issue not reported, adding an issue comment.');

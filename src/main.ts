@@ -73,13 +73,13 @@ async function run(): Promise<void> {
     } else if (existingMatchingIssueComment !== undefined) {
       info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating...`)
       updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
-    } else if (isInDiff(issue, diffMap)) {
-      info('Issue not reported, adding a comment to the review.')
-      newReviewComments.push(createReviewComment(issue, reviewCommentBody))
     } else if (ignoredOnServer) {
       info('Issue ignored on server, no comment needed.')
     } else if (!newOnServer) {
       info('Issue already existed on server, no comment needed.')
+    } else if (isInDiff(issue, diffMap)) {
+      info('Issue not reported, adding a comment to the review.')
+      newReviewComments.push(createReviewComment(issue, reviewCommentBody))
     } else {
       info('Issue not reported, adding an issue comment.')
       createIssueComment(issueCommentBody)
