@@ -1,4 +1,4 @@
-import {debug, info, warning} from '@actions/core'
+import {debug, info, warning, error} from '@actions/core'
 import {IRequestQueryParams} from 'typed-rest-client/Interfaces'
 import {BasicCredentialHandler, BearerCredentialHandler} from 'typed-rest-client/Handlers'
 import {RestClient} from 'typed-rest-client/RestClient'
@@ -41,6 +41,7 @@ interface IRequestFilterMatcher {
   class?: string
   key?: string
   name?: string
+  date?: string
 }
 
 interface ISnapshotScopeFilter {
@@ -69,7 +70,9 @@ export class CoverityApiService {
     })
   }
 
-  async findIssues(projectName: string, offset: number, limit: number): Promise<IIssuesSearchResponse | null> {
+  async findIssues(projectName: string, offset: number, limit: number, dateToCheck?: Date): Promise<IIssuesSearchResponse | null> {
+    const dateMatcherDate = dateToCheck ? dateToCheck : new Date()
+    const dateMatcherString = dateMatcherDate.toISOString().slice(0, 10)
     const requestBody: IIssueOccurrenceRequest = {
       filters: [
         {
@@ -80,6 +83,16 @@ export class CoverityApiService {
               class: 'Project',
               name: projectName,
               type: 'nameMatcher'
+            }
+          ]
+        },
+        {
+          columnKey: 'firstDetected',
+          matchMode: 'oneOrMoreMatch',
+          matchers: [
+            {
+              type: 'dateMatcher',
+              date: dateMatcherString
             }
           ]
         }
@@ -97,13 +110,17 @@ export class CoverityApiService {
       }
     }
     const response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      debug(`Coverity response error: ${response.result}`)
+      return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
+    }
     return response?.result
   }
 }
 
 export function cleanUrl(url: string): string {
   if (url && url.endsWith('/')) {
-    return url.substr(0, url.length - 1)
+    return url.slice(0, url.length - 1)
   }
   return url
 }
