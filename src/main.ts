@@ -27,13 +27,14 @@ async function run(): Promise<void> {
 
   let mergeKeyToIssue = new Map()
   if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-    let covProjectIssues: IIssuesSearchResponse | null = null
+    let covProjectIssues: IIssuesSearchResponse | any = null
     const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
     // TODO page through issues?
     apiService
       .findIssues(COVERITY_PROJECT_NAME, 0, 500)
       .then(result => (covProjectIssues = result))
       .catch(error => setFailed(error))
+    info(`Found ${covProjectIssues?.totalRows} potentially matching issues on the server`)
     mergeKeyToIssue = mapMergeKeys(covProjectIssues)
   }
 
@@ -51,6 +52,7 @@ async function run(): Promise<void> {
     if (projectIssue) {
       ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional']
       newOnServer = projectIssue.firstSnapshotId == projectIssue.lastDetectedId
+      info(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`)
     }
 
     const mergeKeyComment = mergeKeyCommentOf(issue)

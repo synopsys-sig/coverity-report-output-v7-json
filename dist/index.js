@@ -349,6 +349,7 @@ function run() {
                 .findIssues(inputs_1.COVERITY_PROJECT_NAME, 0, 500)
                 .then(result => (covProjectIssues = result))
                 .catch(error => (0, core_1.setFailed)(error));
+            (0, core_1.info)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.totalRows} potentially matching issues on the server`);
             mergeKeyToIssue = mapMergeKeys(covProjectIssues);
         }
         const newReviewComments = [];
@@ -363,6 +364,7 @@ function run() {
             if (projectIssue) {
                 ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional'];
                 newOnServer = projectIssue.firstSnapshotId == projectIssue.lastDetectedId;
+                (0, core_1.info)(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`);
             }
             const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
             const reviewCommentBody = (0, reporting_1.createMessageFromIssue)(issue);
