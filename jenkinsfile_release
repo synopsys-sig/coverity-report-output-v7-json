@@ -25,7 +25,9 @@ pipeline {
     }
     stages {
         stage('Git') {
-            gitCheckoutExportVariables('https://github.com/synopsys-sig/coverity-report-output-v7-json.git')
+            steps {
+                gitCheckoutExportVariables('https://github.com/synopsys-sig/coverity-report-output-v7-json.git')
+            }
         }
         stage('Release') {
             when {
