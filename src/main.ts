@@ -30,7 +30,7 @@ async function run(): Promise<void> {
     let covProjectIssues: IIssuesSearchResponse | any = null
     const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
     // TODO page through issues?
-    apiService
+    await apiService
       .findIssues(COVERITY_PROJECT_NAME, 0, 500)
       .then(result => (covProjectIssues = result))
       .catch(error => setFailed(error))

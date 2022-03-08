@@ -345,7 +345,7 @@ function run() {
             let covProjectIssues = null;
             const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
             // TODO page through issues?
-            apiService
+            yield apiService
                 .findIssues(inputs_1.COVERITY_PROJECT_NAME, 0, 500)
                 .then(result => (covProjectIssues = result))
                 .catch(error => (0, core_1.setFailed)(error));
