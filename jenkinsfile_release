@@ -25,7 +25,7 @@ pipeline {
         label 'integrations'
     }
     stages {
-        checkoutAndExportGitEnvironment('https://github.com/synopsys-sig/coverity-report-output-v7-json.git')
+        checkoutAndExportGitEnvironment('https://github.com/synopsys-sig/coverity-report-output-v7-json.git'){}
         stage('Release') {
             when {
                 allOf {
