@@ -219,19 +219,24 @@ function run() {
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         if ((0, github_context_1.isPullRequest)()) {
             const newReviewComments = [];
-            const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();
-            const existingIssueComments = yield (0, pull_request_1.getExistingIssueComments)();
+            const remainingActionManagedReviewComments = yield (0, pull_request_1.getExistingReviewComments)().then(comments => comments.filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE)));
+            const remainingActionManagedIssueComments = yield (0, pull_request_1.getExistingIssueComments)().then(comments => comments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }));
             const diffMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getDiffMap);
             for (const issue of coverityIssues.issues) {
                 (0, core_1.info)(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
                 const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
                 const reviewCommentBody = (0, reporting_1.createMessageFromIssue)(issue);
                 const issueCommentBody = (0, reporting_1.createMessageFromIssueWithLineInformation)(issue);
-                const existingMatchingReviewComment = existingReviewComments
-                    .filter(comment => comment.line === issue.mainEventLineNumber)
-                    .filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE))
-                    .find(comment => comment.body.includes(mergeKeyComment));
-                const existingMatchingIssueComment = existingIssueComments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }).find(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
+                const reviewCommentIndex = remainingActionManagedReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(mergeKeyComment));
+                let existingMatchingReviewComment = undefined;
+                if (reviewCommentIndex !== -1) {
+                    existingMatchingReviewComment = remainingActionManagedReviewComments.splice(reviewCommentIndex, 1)[0];
+                }
+                const issueCommentIndex = remainingActionManagedIssueComments.findIndex(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
+                let existingMatchingIssueComment = undefined;
+                if (issueCommentIndex !== -1) {
+                    existingMatchingIssueComment = remainingActionManagedIssueComments.splice(issueCommentIndex, 1)[0];
+                }
                 if (existingMatchingReviewComment !== undefined) {
                     (0, core_1.info)(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`);
                     (0, pull_request_1.updateExistingReviewComment)(existingMatchingReviewComment.id, reviewCommentBody);
@@ -252,6 +257,12 @@ function run() {
             if (newReviewComments.length > 0) {
                 (0, core_1.info)('Publishing review...');
                 (0, pull_request_1.createReview)(newReviewComments);
+            }
+            for (const comment of remainingActionManagedReviewComments) {
+                // Update to be invalidated in sha()
+            }
+            for (const comment of remainingActionManagedIssueComments) {
+                // Update to be invalidated in sha()
             }
         }
         (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);

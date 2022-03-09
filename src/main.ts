@@ -16,8 +16,8 @@ async function run(): Promise<void> {
 
   if (isPullRequest()) {
     const newReviewComments = []
-    const existingReviewComments = await getExistingReviewComments()
-    const existingIssueComments = await getExistingIssueComments()
+    const remainingActionManagedReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
+    const remainingActionManagedIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
     const diffMap = await getPullRequestDiff().then(getDiffMap)
 
     for (const issue of coverityIssues.issues) {
@@ -26,12 +26,17 @@ async function run(): Promise<void> {
       const reviewCommentBody = createMessageFromIssue(issue)
       const issueCommentBody = createMessageFromIssueWithLineInformation(issue)
 
-      const existingMatchingReviewComment = existingReviewComments
-        .filter(comment => comment.line === issue.mainEventLineNumber)
-        .filter(comment => comment.body.includes(COMMENT_PREFACE))
-        .find(comment => comment.body.includes(mergeKeyComment))
+      const reviewCommentIndex = remainingActionManagedReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(mergeKeyComment))
+      let existingMatchingReviewComment = undefined
+      if (reviewCommentIndex !== -1) {
+        existingMatchingReviewComment = remainingActionManagedReviewComments.splice(reviewCommentIndex, 1)[0]
+      }
 
-      const existingMatchingIssueComment = existingIssueComments.filter(comment => comment.body?.includes(COMMENT_PREFACE)).find(comment => comment.body?.includes(mergeKeyComment))
+      const issueCommentIndex = remainingActionManagedIssueComments.findIndex(comment => comment.body?.includes(mergeKeyComment))
+      let existingMatchingIssueComment = undefined
+      if (issueCommentIndex !== -1) {
+        existingMatchingIssueComment = remainingActionManagedIssueComments.splice(issueCommentIndex, 1)[0]
+      }
 
       if (existingMatchingReviewComment !== undefined) {
         info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`)
@@ -51,6 +56,14 @@ async function run(): Promise<void> {
     if (newReviewComments.length > 0) {
       info('Publishing review...')
       createReview(newReviewComments)
+    }
+
+    for (const comment of remainingActionManagedReviewComments) {
+      // Update to be invalidated in sha()
+    }
+
+    for (const comment of remainingActionManagedIssueComments) {
+      // Update to be invalidated in sha()
     }
   }
 
