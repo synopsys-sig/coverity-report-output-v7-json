@@ -1,7 +1,7 @@
 import fs from 'fs'
 import {createIssueComment, createReview, getExistingIssueComments, getExistingReviewComments, getPullRequestDiff, updateExistingIssueComment, updateExistingReviewComment} from './github/pull-request'
 import {CoverityIssuesView, IssueOccurrence} from './json-v7-schema'
-import {COMMENT_PREFACE, createMessageFromIssue, createMessageFromIssueWithLineInformation, DiffMap, getDiffMap, mergeKeyCommentOf} from './reporting'
+import {COMMENT_PREFACE, createReviewCommentMessage, createIssueCommentMessage, DiffMap, getDiffMap, createNoLongerPresentMessage, isPresent} from './reporting'
 import {isPullRequest, relativizePath} from './github/github-context'
 import {JSON_FILE_PATH} from './inputs'
 import {info} from '@actions/core'
@@ -16,34 +16,37 @@ async function run(): Promise<void> {
 
   if (isPullRequest()) {
     const newReviewComments = []
-    const remainingActionManagedReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
-    const remainingActionManagedIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
+    const actionReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
+    const actionIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
     const diffMap = await getPullRequestDiff().then(getDiffMap)
 
     for (const issue of coverityIssues.issues) {
       info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
-      const mergeKeyComment = mergeKeyCommentOf(issue)
-      const reviewCommentBody = createMessageFromIssue(issue)
-      const issueCommentBody = createMessageFromIssueWithLineInformation(issue)
+      const reviewCommentBody = createReviewCommentMessage(issue)
+      const issueCommentBody = createIssueCommentMessage(issue)
 
-      const reviewCommentIndex = remainingActionManagedReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(mergeKeyComment))
+      const reviewCommentIndex = actionReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(issue.mergeKey))
       let existingMatchingReviewComment = undefined
       if (reviewCommentIndex !== -1) {
-        existingMatchingReviewComment = remainingActionManagedReviewComments.splice(reviewCommentIndex, 1)[0]
+        existingMatchingReviewComment = actionReviewComments.splice(reviewCommentIndex, 1)[0]
       }
 
-      const issueCommentIndex = remainingActionManagedIssueComments.findIndex(comment => comment.body?.includes(mergeKeyComment))
+      const issueCommentIndex = actionIssueComments.findIndex(comment => comment.body?.includes(issue.mergeKey))
       let existingMatchingIssueComment = undefined
       if (issueCommentIndex !== -1) {
-        existingMatchingIssueComment = remainingActionManagedIssueComments.splice(issueCommentIndex, 1)[0]
+        existingMatchingIssueComment = actionIssueComments.splice(issueCommentIndex, 1)[0]
       }
 
       if (existingMatchingReviewComment !== undefined) {
-        info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`)
-        updateExistingReviewComment(existingMatchingReviewComment.id, reviewCommentBody)
+        info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating if necessary...`)
+        if (existingMatchingReviewComment.body !== reviewCommentBody) {
+          updateExistingReviewComment(existingMatchingReviewComment.id, reviewCommentBody)
+        }
       } else if (existingMatchingIssueComment !== undefined) {
-        info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating...`)
-        updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
+        info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating if necessary...`)
+        if (existingMatchingIssueComment.body !== issueCommentBody) {
+          updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
+        }
       } else if (isInDiff(issue, diffMap)) {
         info('Issue not reported, adding a comment to the review.')
         newReviewComments.push(createReviewComment(issue, reviewCommentBody))
@@ -58,12 +61,18 @@ async function run(): Promise<void> {
       createReview(newReviewComments)
     }
 
-    for (const comment of remainingActionManagedReviewComments) {
-      // Update to be invalidated in sha()
+    for (const comment of actionReviewComments) {
+      if (isPresent(comment.body)) {
+        info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
+        updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
+      }
     }
 
-    for (const comment of remainingActionManagedIssueComments) {
-      // Update to be invalidated in sha()
+    for (const comment of actionIssueComments) {
+      if (comment.body !== undefined && isPresent(comment.body)) {
+        info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
+        updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
+      }
     }
   }
 

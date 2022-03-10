@@ -219,31 +219,34 @@ function run() {
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         if ((0, github_context_1.isPullRequest)()) {
             const newReviewComments = [];
-            const remainingActionManagedReviewComments = yield (0, pull_request_1.getExistingReviewComments)().then(comments => comments.filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE)));
-            const remainingActionManagedIssueComments = yield (0, pull_request_1.getExistingIssueComments)().then(comments => comments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }));
+            const actionReviewComments = yield (0, pull_request_1.getExistingReviewComments)().then(comments => comments.filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE)));
+            const actionIssueComments = yield (0, pull_request_1.getExistingIssueComments)().then(comments => comments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }));
             const diffMap = yield (0, pull_request_1.getPullRequestDiff)().then(reporting_1.getDiffMap);
             for (const issue of coverityIssues.issues) {
                 (0, core_1.info)(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`);
-                const mergeKeyComment = (0, reporting_1.mergeKeyCommentOf)(issue);
-                const reviewCommentBody = (0, reporting_1.createMessageFromIssue)(issue);
-                const issueCommentBody = (0, reporting_1.createMessageFromIssueWithLineInformation)(issue);
-                const reviewCommentIndex = remainingActionManagedReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(mergeKeyComment));
+                const reviewCommentBody = (0, reporting_1.createReviewCommentMessage)(issue);
+                const issueCommentBody = (0, reporting_1.createIssueCommentMessage)(issue);
+                const reviewCommentIndex = actionReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(issue.mergeKey));
                 let existingMatchingReviewComment = undefined;
                 if (reviewCommentIndex !== -1) {
-                    existingMatchingReviewComment = remainingActionManagedReviewComments.splice(reviewCommentIndex, 1)[0];
+                    existingMatchingReviewComment = actionReviewComments.splice(reviewCommentIndex, 1)[0];
                 }
-                const issueCommentIndex = remainingActionManagedIssueComments.findIndex(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(mergeKeyComment); });
+                const issueCommentIndex = actionIssueComments.findIndex(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(issue.mergeKey); });
                 let existingMatchingIssueComment = undefined;
                 if (issueCommentIndex !== -1) {
-                    existingMatchingIssueComment = remainingActionManagedIssueComments.splice(issueCommentIndex, 1)[0];
+                    existingMatchingIssueComment = actionIssueComments.splice(issueCommentIndex, 1)[0];
                 }
                 if (existingMatchingReviewComment !== undefined) {
-                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating...`);
-                    (0, pull_request_1.updateExistingReviewComment)(existingMatchingReviewComment.id, reviewCommentBody);
+                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating if necessary...`);
+                    if (existingMatchingReviewComment.body !== reviewCommentBody) {
+                        (0, pull_request_1.updateExistingReviewComment)(existingMatchingReviewComment.id, reviewCommentBody);
+                    }
                 }
                 else if (existingMatchingIssueComment !== undefined) {
-                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating...`);
-                    (0, pull_request_1.updateExistingIssueComment)(existingMatchingIssueComment.id, issueCommentBody);
+                    (0, core_1.info)(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating if necessary...`);
+                    if (existingMatchingIssueComment.body !== issueCommentBody) {
+                        (0, pull_request_1.updateExistingIssueComment)(existingMatchingIssueComment.id, issueCommentBody);
+                    }
                 }
                 else if (isInDiff(issue, diffMap)) {
                     (0, core_1.info)('Issue not reported, adding a comment to the review.');
@@ -258,11 +261,17 @@ function run() {
                 (0, core_1.info)('Publishing review...');
                 (0, pull_request_1.createReview)(newReviewComments);
             }
-            for (const comment of remainingActionManagedReviewComments) {
-                // Update to be invalidated in sha()
+            for (const comment of actionReviewComments) {
+                if ((0, reporting_1.isPresent)(comment.body)) {
+                    (0, core_1.info)(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`);
+                    (0, pull_request_1.updateExistingReviewComment)(comment.id, (0, reporting_1.createNoLongerPresentMessage)(comment.body));
+                }
             }
-            for (const comment of remainingActionManagedIssueComments) {
-                // Update to be invalidated in sha()
+            for (const comment of actionIssueComments) {
+                if (comment.body !== undefined && (0, reporting_1.isPresent)(comment.body)) {
+                    (0, core_1.info)(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`);
+                    (0, pull_request_1.updateExistingReviewComment)(comment.id, (0, reporting_1.createNoLongerPresentMessage)(comment.body));
+                }
             }
         }
         (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
@@ -294,13 +303,33 @@ run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getDiffMap = exports.createMessageFromIssueWithLineInformation = exports.createMessageFromIssue = exports.mergeKeyCommentOf = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = void 0;
+exports.getDiffMap = exports.createIssueCommentMessage = exports.createReviewCommentMessage = exports.createNoLongerPresentMessage = exports.isPresent = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = exports.NOT_PRESENT = exports.PRESENT = void 0;
 const github_context_1 = __nccwpck_require__(4915);
+exports.PRESENT = 'PRESENT';
+exports.NOT_PRESENT = 'NOT_PRESENT';
 exports.UNKNOWN_FILE = 'Unknown File';
-exports.COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->';
-const mergeKeyCommentOf = (issue) => `<!-- ${issue.mergeKey} -->`;
-exports.mergeKeyCommentOf = mergeKeyCommentOf;
-function createMessageFromIssue(issue) {
+exports.COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify!';
+function isPresent(existingMessage) {
+    const lines = existingMessage.split('\n');
+    return lines.length > 3 && lines[2] !== exports.NOT_PRESENT;
+}
+exports.isPresent = isPresent;
+function createNoLongerPresentMessage(existingMessage) {
+    const existingMessageLines = existingMessage.split('\n');
+    return `${existingMessageLines[0]}
+${existingMessageLines[1]}
+${exports.NOT_PRESENT}
+-->
+
+Coverity issue no longer present as of: ${process.env.GITHUB_SHA}
+<details>
+<summary>Show issue</summary>
+
+${existingMessageLines.slice(2).join('\n')}
+</details>`;
+}
+exports.createNoLongerPresentMessage = createNoLongerPresentMessage;
+function createReviewCommentMessage(issue) {
     const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName;
     const checkerNameString = issue.checkerProperties ? `\r\n_${issue.checkerName}_` : '';
     const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown';
@@ -310,7 +339,10 @@ function createMessageFromIssue(issue) {
     const remediationEvent = issue.events.find(event => event.remediation === true);
     const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : '';
     return `${exports.COMMENT_PREFACE}
-${(0, exports.mergeKeyCommentOf)(issue)}
+${issue.mergeKey}
+${exports.PRESENT}
+-->
+
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 
@@ -319,9 +351,9 @@ _${impactString} Impact${cweString}_${checkerNameString}
 ${remediationString}
 `;
 }
-exports.createMessageFromIssue = createMessageFromIssue;
-function createMessageFromIssueWithLineInformation(issue) {
-    const message = createMessageFromIssue(issue);
+exports.createReviewCommentMessage = createReviewCommentMessage;
+function createIssueCommentMessage(issue) {
+    const message = createReviewCommentMessage(issue);
     const relativePath = (0, github_context_1.relativizePath)(issue.mainEventFilePathname);
     return `${message}
 ## Issue location
@@ -329,7 +361,7 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 [${relativePath}:${issue.mainEventLineNumber}](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/blob/${process.env.GITHUB_SHA}/${relativePath}#L${issue.mainEventLineNumber})
 `;
 }
-exports.createMessageFromIssueWithLineInformation = createMessageFromIssueWithLineInformation;
+exports.createIssueCommentMessage = createIssueCommentMessage;
 function getDiffMap(rawDiff) {
     var _a;
     console.info('Gathering diffs...');

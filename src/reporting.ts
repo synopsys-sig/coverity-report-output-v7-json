@@ -1,13 +1,32 @@
-import {context} from '@actions/github'
-import {getSha, relativizePath} from './github/github-context'
+import {relativizePath} from './github/github-context'
 import {IssueOccurrence} from './json-v7-schema'
 
+export const PRESENT = 'PRESENT'
+export const NOT_PRESENT = 'NOT_PRESENT'
 export const UNKNOWN_FILE = 'Unknown File'
-export const COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify! -->'
+export const COMMENT_PREFACE = '<!-- Comment managed by coverity-report-output-v7 action, do not modify!'
 
-export const mergeKeyCommentOf = (issue: IssueOccurrence): string => `<!-- ${issue.mergeKey} -->`
+export function isPresent(existingMessage: string): boolean {
+  const lines = existingMessage.split('\n')
+  return lines.length > 3 && lines[2] !== NOT_PRESENT
+}
 
-export function createMessageFromIssue(issue: IssueOccurrence): string {
+export function createNoLongerPresentMessage(existingMessage: string): string {
+  const existingMessageLines = existingMessage.split('\n')
+  return `${existingMessageLines[0]}
+${existingMessageLines[1]}
+${NOT_PRESENT}
+-->
+
+Coverity issue no longer present as of: ${process.env.GITHUB_SHA}
+<details>
+<summary>Show issue</summary>
+
+${existingMessageLines.slice(2).join('\n')}
+</details>`
+}
+
+export function createReviewCommentMessage(issue: IssueOccurrence): string {
   const issueName = issue.checkerProperties ? issue.checkerProperties.subcategoryShortDescription : issue.checkerName
   const checkerNameString = issue.checkerProperties ? `\r\n_${issue.checkerName}_` : ''
   const impactString = issue.checkerProperties ? issue.checkerProperties.impact : 'Unknown'
@@ -18,7 +37,10 @@ export function createMessageFromIssue(issue: IssueOccurrence): string {
   const remediationString = remediationEvent ? `## How to fix\r\n ${remediationEvent.eventDescription}` : ''
 
   return `${COMMENT_PREFACE}
-${mergeKeyCommentOf(issue)}
+${issue.mergeKey}
+${PRESENT}
+-->
+
 # Coverity Issue - ${issueName}
 ${mainEventDescription}
 
@@ -28,8 +50,8 @@ ${remediationString}
 `
 }
 
-export function createMessageFromIssueWithLineInformation(issue: IssueOccurrence): string {
-  const message = createMessageFromIssue(issue)
+export function createIssueCommentMessage(issue: IssueOccurrence): string {
+  const message = createReviewCommentMessage(issue)
   const relativePath = relativizePath(issue.mainEventFilePathname)
 
   return `${message}
