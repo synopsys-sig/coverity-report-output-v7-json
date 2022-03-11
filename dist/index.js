@@ -320,13 +320,14 @@ class ProjectIssue {
     }
 }
 exports.ProjectIssue = ProjectIssue;
+// FIXME This is very inefficient for projects with lots of issues. When filtering by mergeKey is fixed, we should use that instead.
 function mapMatchingMergeKeys(relevantMergeKeys) {
     return __awaiter(this, void 0, void 0, function* () {
         const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
         let totalRows = 0;
         let offset = 0;
         const mergeKeyToProjectIssue = new Map();
-        while (offset <= totalRows) {
+        while (offset <= totalRows && mergeKeyToProjectIssue.size < relevantMergeKeys.size) {
             try {
                 const covProjectIssues = yield apiService.findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE);
                 totalRows = covProjectIssues.totalRows;
