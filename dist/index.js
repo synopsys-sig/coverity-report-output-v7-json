@@ -325,7 +325,7 @@ Coverity issue no longer present as of: ${process.env.GITHUB_SHA}
 <details>
 <summary>Show issue</summary>
 
-${existingMessageLines.slice(2).join('\n')}
+${existingMessageLines.slice(4).join('\n')}
 </details>`;
 }
 exports.createNoLongerPresentMessage = createNoLongerPresentMessage;
