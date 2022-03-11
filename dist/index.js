@@ -304,7 +304,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.mapMergeKeys = exports.mapMatchingMergeKeys = exports.ProjectIssue = void 0;
+exports.mapMatchingMergeKeys = exports.ProjectIssue = void 0;
 const core_1 = __nccwpck_require__(2186);
 const coverity_api_1 = __nccwpck_require__(3777);
 const inputs_1 = __nccwpck_require__(6180);
@@ -327,9 +327,8 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
         let offset = 0;
         const mergeKeyToProjectIssue = new Map();
         while (offset <= totalRows) {
-            yield apiService
-                .findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE)
-                .then(covProjectIssues => {
+            try {
+                const covProjectIssues = yield apiService.findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE);
                 totalRows = covProjectIssues.totalRows;
                 (0, core_1.debug)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.rows.length} potentially matching issues on the server`);
                 covProjectIssues.rows
@@ -337,28 +336,16 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .filter(projectIssue => projectIssue.mergeKey != null)
                     .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey))
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
-            })
-                .catch(error => Promise.reject(error));
+            }
+            catch (error) {
+                return Promise.reject(error);
+            }
             offset += PAGE_SIZE;
         }
-        return Promise.resolve(mergeKeyToProjectIssue);
+        return mergeKeyToProjectIssue;
     });
 }
 exports.mapMatchingMergeKeys = mapMatchingMergeKeys;
-function mapMergeKeys(projectIssues) {
-    const mergeKeyToProjectIssue = new Map();
-    if (projectIssues == null) {
-        return mergeKeyToProjectIssue;
-    }
-    for (const issue of projectIssues.rows) {
-        const newIssue = toProjectIssue(issue);
-        if (newIssue.mergeKey != null) {
-            mergeKeyToProjectIssue.set(newIssue.mergeKey, newIssue);
-        }
-    }
-    return mergeKeyToProjectIssue;
-}
-exports.mapMergeKeys = mapMergeKeys;
 function toProjectIssue(issueRows) {
     let cid = '';
     let mergeKey = null;
@@ -416,7 +403,6 @@ const reporting_1 = __nccwpck_require__(5036);
 const github_context_1 = __nccwpck_require__(4915);
 const inputs_1 = __nccwpck_require__(6180);
 const core_1 = __nccwpck_require__(2186);
-const coverity_api_1 = __nccwpck_require__(3777);
 const issue_mapper_1 = __nccwpck_require__(7953);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -428,23 +414,23 @@ function run() {
         // TODO validate file exists and is .json?
         const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
         const coverityIssues = JSON.parse(jsonV7Content.toString());
+        let mergeKeyToIssue = new Map();
         const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
         if (!canCheckCoverity) {
             (0, core_1.warning)('Missing Coverity Connect info. Issues will not be checked against the server.');
         }
-        const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey);
-        const allUniqueMergeKeys = new Set(allMergeKeys);
-        let mergeKeyToIssue = new Map();
-        if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-            let covProjectIssues = null;
-            const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
-            // TODO page through issues?
-            yield apiService
-                .findIssues(inputs_1.COVERITY_PROJECT_NAME, 0, 500)
-                .then(result => (covProjectIssues = result))
-                .catch(error => (0, core_1.setFailed)(error));
-            (0, core_1.info)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.totalRows} potentially matching issues on the server`);
-            mergeKeyToIssue = (0, issue_mapper_1.mapMergeKeys)(covProjectIssues);
+        else {
+            const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey);
+            const allUniqueMergeKeys = new Set(allMergeKeys);
+            if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
+                try {
+                    mergeKeyToIssue = yield (0, issue_mapper_1.mapMatchingMergeKeys)(allUniqueMergeKeys);
+                }
+                catch (error) {
+                    (0, core_1.setFailed)(error);
+                    return Promise.reject();
+                }
+            }
         }
         const newReviewComments = [];
         const existingReviewComments = yield (0, pull_request_1.getExistingReviewComments)();

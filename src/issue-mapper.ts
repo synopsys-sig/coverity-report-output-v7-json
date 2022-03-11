@@ -22,6 +22,7 @@ export class ProjectIssue {
   }
 }
 
+// FIXME This is very inefficient for projects with lots of issues. When filtering by mergeKey is fixed, we should use that instead.
 export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Promise<Map<string, ProjectIssue>> {
   const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
 
@@ -31,37 +32,22 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
   const mergeKeyToProjectIssue = new Map<string, ProjectIssue>()
 
   while (offset <= totalRows) {
-    await apiService
-      .findIssues(COVERITY_PROJECT_NAME, offset, PAGE_SIZE)
-      .then(covProjectIssues => {
-        totalRows = covProjectIssues.totalRows
-        debug(`Found ${covProjectIssues?.rows.length} potentially matching issues on the server`)
+    try {
+      const covProjectIssues = await apiService.findIssues(COVERITY_PROJECT_NAME, offset, PAGE_SIZE)
+      totalRows = covProjectIssues.totalRows
+      debug(`Found ${covProjectIssues?.rows.length} potentially matching issues on the server`)
 
-        covProjectIssues.rows
-          .map(row => toProjectIssue(row))
-          .filter(projectIssue => projectIssue.mergeKey != null)
-          .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
-          .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
-      })
-      .catch(error => Promise.reject(error))
+      covProjectIssues.rows
+        .map(row => toProjectIssue(row))
+        .filter(projectIssue => projectIssue.mergeKey != null)
+        .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
+        .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
+    } catch (error: any) {
+      return Promise.reject(error)
+    }
     offset += PAGE_SIZE
   }
 
-  return Promise.resolve(mergeKeyToProjectIssue)
-}
-
-export function mapMergeKeys(projectIssues: IIssuesSearchResponse | null): Map<string, ProjectIssue> {
-  const mergeKeyToProjectIssue = new Map<string, ProjectIssue>()
-  if (projectIssues == null) {
-    return mergeKeyToProjectIssue
-  }
-
-  for (const issue of projectIssues.rows) {
-    const newIssue = toProjectIssue(issue)
-    if (newIssue.mergeKey != null) {
-      mergeKeyToProjectIssue.set(newIssue.mergeKey, newIssue)
-    }
-  }
   return mergeKeyToProjectIssue
 }
 

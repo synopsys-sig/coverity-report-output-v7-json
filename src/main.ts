@@ -6,8 +6,7 @@ import {isPullRequest, relativizePath} from './github/github-context'
 import {COVERITY_PASSWORD, COVERITY_PROJECT_NAME, COVERITY_URL, COVERITY_USERNAME, JSON_FILE_PATH} from './inputs'
 import {info, setFailed, warning} from '@actions/core'
 import {NewReviewComment} from './_namespaces/github'
-import {CoverityApiService, IIssuesSearchResponse, KEY_ACTION, KEY_CID, KEY_CLASSIFICATION, KEY_FIRST_SNAPSHOT_ID, KEY_LAST_SNAPSHOT_ID, KEY_MERGE_KEY} from './coverity-api'
-import {mapMergeKeys, ProjectIssue} from './issue-mapper'
+import {mapMatchingMergeKeys, ProjectIssue} from './issue-mapper'
 
 async function run(): Promise<void> {
   if (!isPullRequest()) {
@@ -21,25 +20,23 @@ async function run(): Promise<void> {
   const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
   const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
 
+  let mergeKeyToIssue = new Map<string, ProjectIssue>()
+
   const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
   if (!canCheckCoverity) {
     warning('Missing Coverity Connect info. Issues will not be checked against the server.')
-  }
+  } else {
+    const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
+    const allUniqueMergeKeys = new Set<string>(allMergeKeys)
 
-  const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
-  const allUniqueMergeKeys = new Set<string>(allMergeKeys)
-
-  let mergeKeyToIssue = new Map<string, ProjectIssue>()
-  if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-    let covProjectIssues: IIssuesSearchResponse | any = null
-    const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
-    // TODO page through issues?
-    await apiService
-      .findIssues(COVERITY_PROJECT_NAME, 0, 500)
-      .then(result => (covProjectIssues = result))
-      .catch(error => setFailed(error))
-    info(`Found ${covProjectIssues?.totalRows} potentially matching issues on the server`)
-    mergeKeyToIssue = mapMergeKeys(covProjectIssues)
+    if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
+      try {
+        mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
+      } catch (error: any) {
+        setFailed(error as string | Error)
+        return Promise.reject()
+      }
+    }
   }
 
   const newReviewComments = []
