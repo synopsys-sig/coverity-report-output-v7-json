@@ -28,7 +28,8 @@
     "@actions/artifact": "^0.6.1",
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0",
-    "@octokit/rest": "^18.12.0"
+    "@octokit/rest": "^18.12.0",
+    "typed-rest-client": "^1.8.6"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
