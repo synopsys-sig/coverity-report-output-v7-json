@@ -50,10 +50,8 @@ class CoverityApiService {
             }
         });
     }
-    findIssues(projectName, offset, limit, dateToCheck) {
+    findIssues(projectName, offset, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dateMatcherDate = dateToCheck ? dateToCheck : new Date();
-            const dateMatcherString = dateMatcherDate.toISOString().slice(0, 10);
             const requestBody = {
                 filters: [
                     {
@@ -64,16 +62,6 @@ class CoverityApiService {
                                 class: 'Project',
                                 name: projectName,
                                 type: 'nameMatcher'
-                            }
-                        ]
-                    },
-                    {
-                        columnKey: 'firstDetected',
-                        matchMode: 'oneOrMoreMatch',
-                        matchers: [
-                            {
-                                type: 'dateMatcher',
-                                date: dateMatcherString
                             }
                         ]
                     }
@@ -95,7 +83,7 @@ class CoverityApiService {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
             }
-            return response === null || response === void 0 ? void 0 : response.result;
+            return Promise.resolve(response.result);
         });
     }
 }
@@ -302,13 +290,25 @@ exports.COVERITY_PASSWORD = (0, core_1.getInput)('coverity-password');
 /***/ }),
 
 /***/ 7953:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.mapMergeKeys = exports.ProjectIssue = void 0;
+exports.mapMergeKeys = exports.mapMatchingMergeKeys = exports.ProjectIssue = void 0;
+const core_1 = __nccwpck_require__(2186);
 const coverity_api_1 = __nccwpck_require__(3777);
+const inputs_1 = __nccwpck_require__(6180);
+const PAGE_SIZE = 500;
 class ProjectIssue {
     constructor(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId) {
         this.cid = cid;
@@ -320,46 +320,74 @@ class ProjectIssue {
     }
 }
 exports.ProjectIssue = ProjectIssue;
+function mapMatchingMergeKeys(relevantMergeKeys) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
+        let totalRows = 0;
+        let offset = 0;
+        const mergeKeyToProjectIssue = new Map();
+        while (offset <= totalRows) {
+            yield apiService
+                .findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE)
+                .then(covProjectIssues => {
+                totalRows = covProjectIssues.totalRows;
+                (0, core_1.debug)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.rows.length} potentially matching issues on the server`);
+                covProjectIssues.rows
+                    .map(row => toProjectIssue(row))
+                    .filter(projectIssue => projectIssue.mergeKey != null)
+                    .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey))
+                    .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
+            })
+                .catch(error => Promise.reject(error));
+            offset += PAGE_SIZE;
+        }
+        return Promise.resolve(mergeKeyToProjectIssue);
+    });
+}
+exports.mapMatchingMergeKeys = mapMatchingMergeKeys;
 function mapMergeKeys(projectIssues) {
     const mergeKeyToProjectIssue = new Map();
     if (projectIssues == null) {
         return mergeKeyToProjectIssue;
     }
     for (const issue of projectIssues.rows) {
-        let cid = '';
-        let mergeKey = null;
-        let action = '';
-        let classification = '';
-        let firstSnapshotId = '';
-        let lastSnapshotId = '';
-        for (const issueCol of issue) {
-            if (issueCol.key == coverity_api_1.KEY_CID) {
-                cid = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_MERGE_KEY) {
-                mergeKey = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_ACTION) {
-                action = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_CLASSIFICATION) {
-                classification = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_FIRST_SNAPSHOT_ID) {
-                firstSnapshotId = issueCol.value;
-            }
-            else if (issueCol.key == coverity_api_1.KEY_LAST_SNAPSHOT_ID) {
-                lastSnapshotId = issueCol.value;
-            }
-        }
-        if (mergeKey != null) {
-            const newIssue = new ProjectIssue(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId);
-            mergeKeyToProjectIssue.set(mergeKey, newIssue);
+        const newIssue = toProjectIssue(issue);
+        if (newIssue.mergeKey != null) {
+            mergeKeyToProjectIssue.set(newIssue.mergeKey, newIssue);
         }
     }
     return mergeKeyToProjectIssue;
 }
 exports.mapMergeKeys = mapMergeKeys;
+function toProjectIssue(issueRows) {
+    let cid = '';
+    let mergeKey = null;
+    let action = '';
+    let classification = '';
+    let firstSnapshotId = '';
+    let lastSnapshotId = '';
+    for (const issueCol of issueRows) {
+        if (issueCol.key == coverity_api_1.KEY_CID) {
+            cid = issueCol.value;
+        }
+        else if (issueCol.key == coverity_api_1.KEY_MERGE_KEY) {
+            mergeKey = issueCol.value;
+        }
+        else if (issueCol.key == coverity_api_1.KEY_ACTION) {
+            action = issueCol.value;
+        }
+        else if (issueCol.key == coverity_api_1.KEY_CLASSIFICATION) {
+            classification = issueCol.value;
+        }
+        else if (issueCol.key == coverity_api_1.KEY_FIRST_SNAPSHOT_ID) {
+            firstSnapshotId = issueCol.value;
+        }
+        else if (issueCol.key == coverity_api_1.KEY_LAST_SNAPSHOT_ID) {
+            lastSnapshotId = issueCol.value;
+        }
+    }
+    return new ProjectIssue(cid, mergeKey, action, classification, firstSnapshotId, lastSnapshotId);
+}
 
 
 /***/ }),
@@ -404,6 +432,8 @@ function run() {
         if (!canCheckCoverity) {
             (0, core_1.warning)('Missing Coverity Connect info. Issues will not be checked against the server.');
         }
+        const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey);
+        const allUniqueMergeKeys = new Set(allMergeKeys);
         let mergeKeyToIssue = new Map();
         if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
             let covProjectIssues = null;

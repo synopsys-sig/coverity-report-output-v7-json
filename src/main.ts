@@ -26,6 +26,9 @@ async function run(): Promise<void> {
     warning('Missing Coverity Connect info. Issues will not be checked against the server.')
   }
 
+  const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
+  const allUniqueMergeKeys = new Set<string>(allMergeKeys)
+
   let mergeKeyToIssue = new Map<string, ProjectIssue>()
   if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
     let covProjectIssues: IIssuesSearchResponse | any = null

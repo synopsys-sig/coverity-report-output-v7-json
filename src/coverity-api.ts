@@ -1,4 +1,4 @@
-import {debug, info, warning, error} from '@actions/core'
+import {debug} from '@actions/core'
 import {IRequestQueryParams} from 'typed-rest-client/Interfaces'
 import {BasicCredentialHandler, BearerCredentialHandler} from 'typed-rest-client/Handlers'
 import {RestClient} from 'typed-rest-client/RestClient'
@@ -70,9 +70,7 @@ export class CoverityApiService {
     })
   }
 
-  async findIssues(projectName: string, offset: number, limit: number, dateToCheck?: Date): Promise<IIssuesSearchResponse | null> {
-    const dateMatcherDate = dateToCheck ? dateToCheck : new Date()
-    const dateMatcherString = dateMatcherDate.toISOString().slice(0, 10)
+  async findIssues(projectName: string, offset: number, limit: number): Promise<IIssuesSearchResponse> {
     const requestBody: IIssueOccurrenceRequest = {
       filters: [
         {
@@ -83,16 +81,6 @@ export class CoverityApiService {
               class: 'Project',
               name: projectName,
               type: 'nameMatcher'
-            }
-          ]
-        },
-        {
-          columnKey: 'firstDetected',
-          matchMode: 'oneOrMoreMatch',
-          matchers: [
-            {
-              type: 'dateMatcher',
-              date: dateMatcherString
             }
           ]
         }
@@ -114,7 +102,7 @@ export class CoverityApiService {
       debug(`Coverity response error: ${response.result}`)
       return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
     }
-    return response?.result
+    return Promise.resolve(response.result as IIssuesSearchResponse)
   }
 }
 

@@ -12,7 +12,8 @@ inputs:
     description: 'The URL of the Coverity Connect server to be referenced for REST API calls'
     required: false
   coverity-project-name:
-    description: 'The name of this project within the Coverity Connect instance'
+    description: 'The name of this project within the Coverity Connect instance. This field is required to properly query issues from the server'
+    required: false
   coverity-username:
     description: 'The username of the Coverity user whose account will access the Coverity Connect server. The user must have the "Access Web services" permission.'
     required: false
