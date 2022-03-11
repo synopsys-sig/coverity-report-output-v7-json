@@ -323,6 +323,7 @@ exports.ProjectIssue = ProjectIssue;
 // FIXME This is very inefficient for projects with lots of issues. When filtering by mergeKey is fixed, we should use that instead.
 function mapMatchingMergeKeys(relevantMergeKeys) {
     return __awaiter(this, void 0, void 0, function* () {
+        (0, core_1.info)('Checking Coverity server for existing issues...');
         const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
         let totalRows = 0;
         let offset = 0;
@@ -343,6 +344,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             offset += PAGE_SIZE;
         }
+        (0, core_1.info)(`Found ${mergeKeyToProjectIssue.size} existing issues`);
         return mergeKeyToProjectIssue;
     });
 }

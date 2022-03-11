@@ -1,4 +1,4 @@
-import {setFailed, debug} from '@actions/core'
+import {debug, info} from '@actions/core'
 import {CoverityApiService, IIssuesSearchResponse, IResponseCell, KEY_ACTION, KEY_CID, KEY_CLASSIFICATION, KEY_FIRST_SNAPSHOT_ID, KEY_LAST_SNAPSHOT_ID, KEY_MERGE_KEY} from './coverity-api'
 import {COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD, COVERITY_PROJECT_NAME} from './inputs'
 
@@ -24,6 +24,7 @@ export class ProjectIssue {
 
 // FIXME This is very inefficient for projects with lots of issues. When filtering by mergeKey is fixed, we should use that instead.
 export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Promise<Map<string, ProjectIssue>> {
+  info('Checking Coverity server for existing issues...')
   const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
 
   let totalRows = 0
@@ -48,6 +49,7 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
     offset += PAGE_SIZE
   }
 
+  info(`Found ${mergeKeyToProjectIssue.size} existing issues`)
   return mergeKeyToProjectIssue
 }
 
