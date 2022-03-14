@@ -1,0 +1,123 @@
+diff --git a/.github/workflows/gradle.yml b/.github/workflows/gradle.yml
+index e3cecfe..d37854c 100644
+--- a/.github/workflows/gradle.yml
++++ b/.github/workflows/gradle.yml
+@@ -1,31 +1,22 @@
+ # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+ # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+ 
+-name: Simple Detect Workflow
+-on:
+-  push:
+-    branches: [ main ]
+-  pull_request:
+-    branches: [ main ]
++name: Simple Coverity Workflow
++on: [pull_request]
+ 
+ jobs:
+   build:
+-    runs-on: macos
++    runs-on: rich
+     steps:
+     - uses: actions/checkout@v2
+-    - name: Set up JDK 11
+-      uses: actions/setup-java@v2
++    - name: Coverity Capture
++      run: '${{ secrets.RO_COVERITY_PATH }}/cov-capture --dir idir --source-dir .'
++    - name: Coverity Analyze
++      run: '${{ secrets.RO_COVERITY_PATH }}/cov-analyze --dir idir'
++    - name: Coverity Format Errors
++      run: '${{ secrets.RO_COVERITY_PATH }}/cov-format-errors --dir idir --json-output-v7 output.json'
++    - name: Coverity Report
++      uses: synopsys-sig/coverity-report-output-v7-json@ro-handle-existing-comments
+       with:
+-        java-version: '11'
+-        distribution: 'adopt'
+-    - name: Grant execute permission for gradlew
+-      run: chmod +x gradlew
+-    - name: Build with Gradle
+-      run: ./gradlew build
+-    - name: Synopsys Detect
+-      uses: synopsys-sig/detect-action@main
+-      with:
+-          github-token: ${{ secrets.GITHUB_TOKEN }}
+-          detect-version: 7.7.0
+-          blackduck-url: ${{ secrets.BLACKDUCK_URL }}
+-          blackduck-api-token: ${{ secrets.BLACKDUCK_API_TOKEN }}
++        github-token: ${{ secrets.GITHUB_TOKEN }}
++        json-file-path: output.json
+diff --git a/bad_cert_demo.js b/bad_cert_demo.js
+new file mode 100644
+index 0000000..8d2b665
+--- /dev/null
++++ b/bad_cert_demo.js
+@@ -0,0 +1,24 @@
++var tls = require('tls');
++var https = require('https');
++
++var socket1 = tls.connect({
++    port: 1337,
++    host: 'https://example1.com',
++    rejectUnauthorized: true,
++    checkServerIdentity: function(servername, peer) {  
++        const good = '77:53:28:AD:42:B1:04:F7:49:2B:C7:C7:7B:2A:84:64:EA:0B:1F:CE';
++        const bad = 'mismatch';
++        console.log('Woohoo, www.google.com is using our pinned fingerprint');
++        return undefined;
++    }}, () => {
++    console.log('client connected');
++});
++
++socket1.on('error', (data)=> {
++    console.log(data);
++});
++
++var req = https.request({port: 1336, host: 'https://example2.com', rejectUnauthorized: false}, function(){ 
++    console.log('client connected');
++}); 
++
+diff --git a/deploy.yml b/deploy.yml
+new file mode 100644
+index 0000000..dce3534
+--- /dev/null
++++ b/deploy.yml
+@@ -0,0 +1,38 @@
++Resources:
++  ElasticsearchDomain:
++    Type: AWS::Elasticsearch::Domain
++    Properties:
++      DomainName: "test"
++      ElasticsearchClusterConfig:
++        DedicatedMasterEnabled: true
++        InstanceCount: 2
++        ZoneAwarenessEnabled: true
++        InstanceType: "m3.medium.elasticsearch"
++        DedicatedMasterType: "m3.medium.elasticsearch"
++        DedicatedMasterCount: 3
++      EncryptionAtRestOptions:
++        Enabled: true
++      EBSOptions:
++        EBSEnabled: true
++        Iops: 0
++        VolumeSize: 20
++        VolumeType: "gp2"
++      SnapshotOptions:
++        AutomatedSnapshotStartHour: 0
++      AccessPolicies:
++        Version: '2012-10-17'
++        Statement:
++          - Effect: Deny
++            Principal:
++              AWS: '*'
++            Action: 'es:*'
++            Resource: '*'
++      LogPublishingOptions:
++        SEARCH_SLOW_LOGS:
++          CloudWatchLogsLogGroupArn: >-
++            arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-slow-logs
++          Enabled: true
++        INDEX_SLOW_LOGS:
++          CloudWatchLogsLogGroupArn: >-
++            arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-slow-logs
++          Enabled: true
