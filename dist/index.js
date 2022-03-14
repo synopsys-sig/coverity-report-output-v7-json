@@ -435,47 +435,6 @@ function run() {
                 }
             }
         }
-        /*
-          if (isPullRequest()) {
-          const newReviewComments = []
-          const actionReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
-          const actionIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
-          const diffMap = await getPullRequestDiff().then(getDiffMap)
-      
-          for (const issue of coverityIssues.issues) {
-            info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
-            const reviewCommentBody = createReviewCommentMessage(issue)
-            const issueCommentBody = createIssueCommentMessage(issue)
-      
-            const reviewCommentIndex = actionReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(issue.mergeKey))
-            let existingMatchingReviewComment = undefined
-            if (reviewCommentIndex !== -1) {
-              existingMatchingReviewComment = actionReviewComments.splice(reviewCommentIndex, 1)[0]
-            }
-      
-            const issueCommentIndex = actionIssueComments.findIndex(comment => comment.body?.includes(issue.mergeKey))
-            let existingMatchingIssueComment = undefined
-            if (issueCommentIndex !== -1) {
-              existingMatchingIssueComment = actionIssueComments.splice(issueCommentIndex, 1)[0]
-            }
-      
-            if (existingMatchingReviewComment !== undefined) {
-              info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating if necessary...`)
-              if (existingMatchingReviewComment.body !== reviewCommentBody) {
-                updateExistingReviewComment(existingMatchingReviewComment.id, reviewCommentBody)
-              }
-            } else if (existingMatchingIssueComment !== undefined) {
-              info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating if necessary...`)
-              if (existingMatchingIssueComment.body !== issueCommentBody) {
-                updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
-              }
-            } else if (isInDiff(issue, diffMap)) {
-              info('Issue not reported, adding a comment to the review.')
-              newReviewComments.push(createReviewComment(issue, reviewCommentBody))
-            } else {
-              info('Issue not reported, adding an issue comment.')
-              createIssueComment(issueCommentBody)
-            */
         const newReviewComments = [];
         const actionReviewComments = yield (0, pull_request_1.getExistingReviewComments)().then(comments => comments.filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE)));
         const actionIssueComments = yield (0, pull_request_1.getExistingIssueComments)().then(comments => comments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }));
