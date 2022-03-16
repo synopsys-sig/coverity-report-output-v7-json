@@ -76,8 +76,31 @@ jobs:
           cov-format-errors --dir idir --security-file coverity-license.dat --json-output-v7 coverity-full-results.json
       
         # Here is where this action is called
-        - name: Parse Coverity JSON
+        - name: Coverity Report
           uses: synopsys-sig/coverity-report-output-v7-json@v0.0.0
           with:
               json-file-path: ./coverity-full-results.json
 ```
+
+## Include Custom Certificates (Optional)
+
+To include one or more root CA certificates, set `NODE_EXTRA_CA_CERTS` to the certificate file-path(s) in the environment. 
+Notes: 
+
+- The certificate(s) must be in _pem_ format. 
+- This environment variable can also be used with the _Create Policy Action_.  
+
+**Example**:   
+```yaml
+- name: Coverity Report
+        uses: synopsys-sig/coverity-report-output-v7-json@v0.0.0
+        env:
+            NODE_EXTRA_CA_CERTS: ${{ secrets.LOCAL_CA_CERT_PATH }}
+        with:
+            . . .
+```
+### Troubleshooting Certificates
+- Problem: An error saying the file-path to the certificate cannot be read.
+  - Solution: Ensure whitespace and other special characers are properly escaped based on your runner's OS.
+- Problem: An error about missing certificates in the certificate-chain or missing root certificates.
+  - Solution: You may only be including the server's certificate and not the _root CA certificate_. Ensure you are using the _root CA certificate_.
