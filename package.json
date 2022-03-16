@@ -19,11 +19,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/synopsys-sig/coverity-report-output-v7-json.git"
   },
   "keywords": [],
   "author": "Synopsys Inc.",
   "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/synopsys-sig/coverity-report-output-v7-json/issues"
+  },
+  "homepage": "https://github.com/synopsys-sig/coverity-report-output-v7-json#readme",
   "dependencies": {
     "@actions/artifact": "^0.6.1",
     "@actions/core": "^1.6.0",
