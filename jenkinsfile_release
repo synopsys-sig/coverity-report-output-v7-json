@@ -4,6 +4,7 @@
 */
 @Library('integration-pipeline-library@master')
 import com.synopsys.integration.Constants
+import com.synopsys.integration.pipeline.scm.GitStage
 
 properties(
     [
