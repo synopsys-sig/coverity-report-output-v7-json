@@ -1,6 +1,6 @@
 {
   "name": "coverity-report-output-v7-json",
-  "version": "0.0.1",
+  "version": "0.0.1-SNAPSHOT",
   "private": true,
   "description": "Parse Coverity json-output-v7 and report on the results within GitHub",
   "main": "lib/main.js",
