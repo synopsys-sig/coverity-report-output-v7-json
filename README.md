@@ -1,5 +1,7 @@
 # Coverity Report For v7 JSON Output
 
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/synopsys-sig/coverity-report-output-v7-json?color=blue&label=Latest%20Version&sort=semver)
+
 Uses Coverity's v7 JSON output to provide comments on Pull Requests about code quality issues. 
 
 **Note**: This action does not run Coverity command line tools. It is purely a way to expose Coverity output within GitHub.
