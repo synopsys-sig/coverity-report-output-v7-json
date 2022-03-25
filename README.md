@@ -14,6 +14,7 @@ To start using this action, add the following step to your existing GitHub workf
     uses: synopsys-sig/coverity-report-output-v7-json@<version>
     with:
         json-file-path: $COVERITY_OUTPUT_PATH
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Replace `<version>` with the version of the action you would like to use. 
@@ -109,6 +110,9 @@ Notes:
   - Solution: Ensure whitespace and other special characers are properly escaped based on your runner's OS.
 - Problem: An error about missing certificates in the certificate-chain or missing root certificates.
   - Solution: You may only be including the server's certificate and not the _root CA certificate_. Ensure you are using the _root CA certificate_.
+
+# Frequently asked questions
+1. Why use the Coverity JSON v7 output? In order to reach the broadest set of use cases, we chose to implement this action using the slightly older Coverity JSON v7 output format. While cov-format-errors supports a JSON v8 format, cov-run-desktop only supports JSON v7, and we want to support as many deployment styles as possible. We do not query for defects from Coverity Connect in order to support use cases where the analysis is only run locally.
 
 
 # Future Enhancements
