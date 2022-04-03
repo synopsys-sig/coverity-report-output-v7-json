@@ -43,57 +43,67 @@ This workflow does the following:
 ```yaml
 name: Coverity with Self-Hosted Runner
 on:
+  push:
+    branches: [ master, main ]
+
   pull_request:
-    branches: [ main ]
+    branches: [ master, main ]
 
 jobs:
   build:
     runs-on: [self-hosted]
 
     env:
+      COVERITY_CHECKERS: --webapp-security
       COVERITY_URL: ${{ secrets.COVERITY_URL }}
       COV_USER: ${{ secrets.COVERITY_USER }}
       COVERITY_PASSPHRASE: ${{ secrets.COVERITY_PASSPHRASE }}
-      COVERITY_CHECKERS: --webapp-security
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Create Coverity Stream
-        # Only create a new stream for 'push' events
-        if: ${{github.event_name == 'push'}}
-        run: |
-          env
-          export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
-          export COVERITY_PROJECT_NAME=${GITHUB_REPOSITORY##*/}
-          echo Ensure that stream "$COVERITY_STREAM_NAME" exists
-          cov-manage-im --url $COVERITY_URL --on-new-cert trust --mode projects --add --set name:"$COVERITY_PROJECT_NAME" || true
-          cov-manage-im --url $COVERITY_URL --on-new-cert trust --mode streams --add -set name:"$COVERITY_STREAM_NAME" || true
-          cov-manage-im --url $COVERITY_URL --on-new-cert trust --mode projects --update --name "$COVERITY_PROJECT_NAME" --insert stream:"$COVERITY_STREAM_NAME"
-
-      - name: Coverity Scan for Pull Requests
-        if: ${{github.event_name == 'pull_request'}}
+      - name: Coverity Scan (Full analysis)
+        if: ${{ github.event_name != 'pull_request' }}
+        shell: bash
         run: |
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
           cov-capture --dir idir --project-dir .
           cov-analyze --dir idir --strip-path `pwd` $COVERITY_CHECKERS
-          cov-commit-defects --dir idir --ticker-mode none --url $COVERITY_URL --on-new-cert trust --stream $COVERITY_STREAM_NAME --scm git --description "GitHub Workflow $GITHUB_WORKFLOW for $GITHUB_REPO" --version $GITHUB_SHA
+          cov-commit-defects --dir idir --ticker-mode none --url ${{ secrets.COVERITY_URL }} --on-new-cert trust --stream \
+              $COVERITY_STREAM_NAME --scm git --description "GitHub Workflow $GITHUB_WORKFLOW for $GITHUB_REPO" --version $GITHUB_SHA
           cov-format-errors --dir idir --json-output-v7 coverity-results.json
-      
-        # Here is where this action is called
-        - name: Coverity Report
-          uses: synopsys-sig/coverity-report-output-v7-json@v0.0.1
-          with:
-              # The following parameters are REQUIRED
-              json-file-path: ./coverity-results.json
-              github-token: ${{ secrets.GITHUB_TOKEN }}
-              # If the following optional parameters are specified, the results from the JSON output will be
-              # compared to the baseline issues in the specified project, and only NEW issues will be reported
-              # in the pull request.
-              coverity-url: ${{ secrets.COVERITY_URL }}
-              coverity-project-name: ${{ github.event.repository.name }}
-              coverity-username: ${{ secrets.COV_USER }}
-              coverity-password: ${{ secrets.COVERITY_PASSPHRASE }}
+      - name: Get Pull Request Changeset
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changeset
+        uses: jitterbit/get-changed-files@v1
+
+      - name: Coverity Scan (Incremental analysis)
+        if: ${{github.event_name == 'pull_request'}}
+        run: |
+          export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${{ github.base_ref }}
+          for changed_file in ${{ steps.changeset.outputs.added_modified }}; do
+            echo ${changed_file} >> coverity-files-to-scan.txt
+            echo "Scan changed file ${changed_file}."
+          done
+          cov-capture --dir idir --project-dir .
+          cov-run-desktop --dir idir --strip-path `pwd` --url ${{ secrets.COVERITY_URL }} --stream $COVERITY_STREAM_NAME --present-in-reference false \
+            --ignore-uncapturable-inputs true \
+            --json-output-v7 coverity-results.json \
+            $COVERITY_CHECKERS \
+            ${{ steps.changeset.outputs.added_modified }}
+      - name: Coverity Pull Request Feedback
+        uses: synopsys-sig/coverity-report-output-v7-json@v0.0.1
+        with:
+          # The following parameters are REQUIRED
+          json-file-path: ./coverity-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # If the following optional parameters are specified, the results from the JSON output will be
+          # compared to the baseline issues in the specified project, and only NEW issues will be reported
+          # in the pull request.
+          coverity-url: ${{ secrets.COVERITY_URL }}
+          coverity-project-name: ${{ github.event.repository.name }}
+          coverity-username: ${{ secrets.COV_USER }}
+          coverity-password: ${{ secrets.COVERITY_PASSPHRASE }}
 ```
 
 ## Include Custom Certificates (Optional)
