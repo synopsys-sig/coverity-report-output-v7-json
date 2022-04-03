@@ -25,7 +25,8 @@ To start using this action, add the following step to your existing GitHub workf
       github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Replace `<version>` with the version of the action you would like to use. 
+Replace `<version>` with the version of the action you would like to use. You can find the latest version at the top of this README!
+
 Set the parameter `json-file-path` to the path where the Coverity v7 JSON output can be found. This is the file generated using the following command: 
 ```bash
 cov-format-errors --dir <intermediate dir> --json-output-v7 coverity-results.json
@@ -92,7 +93,7 @@ jobs:
             $COVERITY_CHECKERS \
             ${{ steps.changeset.outputs.added_modified }}
       - name: Coverity Pull Request Feedback
-        uses: synopsys-sig/coverity-report-output-v7-json@v0.0.1
+        uses: synopsys-sig/coverity-report-output-v7-json@v0.1.0
         with:
           # The following parameters are REQUIRED
           json-file-path: ./coverity-results.json
