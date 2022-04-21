@@ -6,6 +6,8 @@ Uses Coverity's v7 JSON output to provide comments on Pull Requests about code q
 
 **Note**: This action does not run Coverity command line tools. It is purely a way to expose Coverity output within GitHub.
 
+**Note**: This action does not yet support the Cloud Native Coverity thin client, with analysis performed in the cloud. Please use this action with the traditional local analysis workflow.
+
 Receive review feedback on your changes, including everything you need to understand and fix critial security weaknesses.
 
 ![Coverity Review Feedback Screenshot](.github/reviewComment.png)
