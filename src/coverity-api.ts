@@ -98,6 +98,7 @@ export class CoverityApiService {
       }
     }
 
+    // For SIGINT-90
     debug(`Requesting from Coverity Server: endpoint: /api/v2/issues/search params: ${JSON.stringify(queryParameters)} body: ${JSON.stringify(requestBody)}`)
 
     const response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
