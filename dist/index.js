@@ -331,6 +331,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
         while (offset <= totalRows && mergeKeyToProjectIssue.size < relevantMergeKeys.size) {
             try {
                 const covProjectIssues = yield apiService.findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE);
+                (0, core_1.info)('COV_PROJECT_ISSUES: '+ inputs_1.COVERITY_PROJECT_NAME + 'ISSUE ' +covProjectIssues);
                 totalRows = covProjectIssues.totalRows;
                 (0, core_1.debug)(`Found ${covProjectIssues === null || covProjectIssues === void 0 ? void 0 : covProjectIssues.rows.length} potentially matching issues on the server`);
                 covProjectIssues.rows
