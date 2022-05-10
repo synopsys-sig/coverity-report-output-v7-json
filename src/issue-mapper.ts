@@ -38,6 +38,7 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
       debug('Coverity Issues witht the project : '+covProjectIssues)
       totalRows = covProjectIssues.totalRows
       debug(`Found ${covProjectIssues?.rows.length} potentially matching issues on the server`)
+      info('TETSING FOR THE COVERITY WORKFLOW')
 
       covProjectIssues.rows
         .map(row => toProjectIssue(row))
