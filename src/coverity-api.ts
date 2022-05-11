@@ -1,4 +1,4 @@
-import {debug} from '@actions/core'
+import {debug, info} from '@actions/core'
 import {IRequestQueryParams} from 'typed-rest-client/Interfaces'
 import {BasicCredentialHandler, BearerCredentialHandler} from 'typed-rest-client/Handlers'
 import {RestClient} from 'typed-rest-client/RestClient'
@@ -97,8 +97,10 @@ export class CoverityApiService {
         sortOrder: 'asc'
       }
     }
+
     const response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      info('INSIDE THE REST CLIENT METHOD : '+response.statusCode)
       debug(`Coverity response error: ${response.result}`)
       return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
     }
