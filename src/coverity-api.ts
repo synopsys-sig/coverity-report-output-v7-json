@@ -104,8 +104,8 @@ export class CoverityApiService {
         debug(`Coverity response error: ${response.result}`)
         return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
       }
-    }catch(error : any){
-      info('INSIDE CATCH BLOCK OF REST API :'+ error)
+    }catch(error){
+      info('INSIDE CATCH BLOCK OF REST API :'+ error+ 'Promise RESULt: '+ response.result)
     }
     return Promise.resolve(response.result as IIssuesSearchResponse)
   }
