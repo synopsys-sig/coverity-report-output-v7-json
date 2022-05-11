@@ -97,7 +97,7 @@ export class CoverityApiService {
         sortOrder: 'asc'
       }
     }
-    let response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
+    const response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
     if (response.statusCode < 200 || response.statusCode >= 300) {
       debug(`Coverity response error: ${response.result}`)
       return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)

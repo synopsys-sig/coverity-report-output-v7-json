@@ -78,7 +78,7 @@ class CoverityApiService {
                     sortOrder: 'asc'
                 }
             };
-            let response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+            const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
@@ -342,7 +342,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                throw new Error("Project Name Dosent exists or check the name of project mentioned in workflow");
+                throw new Error("Project Name Dosent exists or check the name of project mentioned in workflow :" + error);
                 //return Promise.reject(error)
             }
             offset += PAGE_SIZE;
