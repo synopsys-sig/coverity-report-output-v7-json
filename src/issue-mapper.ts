@@ -46,8 +46,8 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-      info('INSIDE The CATCH  BLOCK of error')
-      return Promise.reject(error)
+      throw new Error("Project Name Dosent exists or check the name of project mentioned in workflow");
+      //return Promise.reject(error)
     }
     offset += PAGE_SIZE
   }

@@ -52,7 +52,6 @@ class CoverityApiService {
     }
     findIssues(projectName, offset, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, core_1.info)('INSIDE THE FIND ISSUE METHIOD :' + projectName);
             const requestBody = {
                 filters: [
                     {
@@ -80,8 +79,6 @@ class CoverityApiService {
                 }
             };
             let response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
-            response =  false ? 0 : (() => { throw new Error("Test is nullish"); })();
-            (0, core_1.info)('INSIDE THE RESPONSE OF THE COVERITY API CALL : ' + response.statusCode);
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
@@ -345,8 +342,8 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                (0, core_1.info)('INSIDE The CATCH  BLOCK of error');
-                return Promise.reject(error);
+                throw new Error("Project Name Dosent exists or check the name of project mentioned in workflow");
+                //return Promise.reject(error)
             }
             offset += PAGE_SIZE;
         }

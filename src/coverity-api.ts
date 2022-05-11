@@ -71,7 +71,6 @@ export class CoverityApiService {
   }
 
   async findIssues(projectName: string, offset: number, limit: number): Promise<IIssuesSearchResponse> {
-    info('INSIDE THE FIND ISSUE METHIOD :' + projectName)
     const requestBody: IIssueOccurrenceRequest = {
       filters: [
         {
@@ -99,8 +98,6 @@ export class CoverityApiService {
       }
     }
     let response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
-    response = null ?? (() => {throw new Error("Test is nullish")})();
-    info('INSIDE THE RESPONSE OF THE COVERITY API CALL : ' + response.statusCode)
     if (response.statusCode < 200 || response.statusCode >= 300) {
       debug(`Coverity response error: ${response.result}`)
       return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
