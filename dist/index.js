@@ -87,7 +87,8 @@ class CoverityApiService {
                 }
             }
             catch (error) {
-                (0, core_1.info)('INSIDE CATCH BLOCK OF REST API :' + error + 'Promise RESULt: ' + response.result);
+                (0, core_1.info)('INSIDE CATCH BLOCK OF REST API :' + error);
+                return Promise.reject(error);
             }
             return Promise.resolve(response.result);
         });
@@ -349,7 +350,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             catch (error) {
                 throw new Error("Project Name Dosent exists or check the name of project mentioned in workflow :" + error);
-                //return Promise.reject(error)
+                return Promise.reject(error);
             }
             offset += PAGE_SIZE;
         }
