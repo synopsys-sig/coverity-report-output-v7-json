@@ -78,10 +78,16 @@ class CoverityApiService {
                     sortOrder: 'asc'
                 }
             };
-            const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
-            if (response.statusCode < 200 || response.statusCode >= 300) {
-                (0, core_1.debug)(`Coverity response error: ${response.result}`);
-                return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
+            let response;
+            try {
+                response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+                if (response.statusCode < 200 || response.statusCode >= 300) {
+                    (0, core_1.debug)(`Coverity response error: ${response.result}`);
+                    return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
+                }
+            }
+            catch (error) {
+                (0, core_1.info)('INSIDE CATCH BLOCK OF REST API :' + error);
             }
             return Promise.resolve(response.result);
         });

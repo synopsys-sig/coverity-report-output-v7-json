@@ -97,10 +97,15 @@ export class CoverityApiService {
         sortOrder: 'asc'
       }
     }
-    const response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      debug(`Coverity response error: ${response.result}`)
-      return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
+    let response: any
+    try {
+       response = await this.restClient.create<IIssuesSearchResponse>('/api/v2/issues/search', requestBody, {queryParameters})
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        debug(`Coverity response error: ${response.result}`)
+        return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`)
+      }
+    }catch(error : any){
+      info('INSIDE CATCH BLOCK OF REST API :'+ error)
     }
     return Promise.resolve(response.result as IIssuesSearchResponse)
   }
