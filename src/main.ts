@@ -17,6 +17,20 @@ async function run(): Promise<void> {
   info(`Using JSON file path: ${JSON_FILE_PATH}`)
 
   // TODO validate file exists and is .json?
+  try {
+    info('Inside TRY Block of file exists or not')
+    if (fs.existsSync(JSON_FILE_PATH)) {
+      info('Inside TRY Block of FILE EXISTS')
+      const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
+      if(Object.keys(jsonV7Content).length !== 0){
+        info('Inside TRY Block of FILE LENGTH IS >0')
+        const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
+      }
+      //file exists
+    }
+  } catch(err) {
+    console.error(err)
+  }
   const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
   const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
 
