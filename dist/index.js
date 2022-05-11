@@ -79,7 +79,8 @@ class CoverityApiService {
                     sortOrder: 'asc'
                 }
             };
-            const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+            let response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+            response =  false ? 0 : (() => { throw new Error("Test is nullish"); })();
             (0, core_1.info)('INSIDE THE RESPONSE OF THE COVERITY API CALL : ' + response.statusCode);
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
