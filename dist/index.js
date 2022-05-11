@@ -414,31 +414,33 @@ function run() {
             return Promise.resolve();
         }
         (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
+        var jsonV7Content;
+        var coverityIssues;
         // TODO validate file exists and is .json?
         try {
             (0, core_1.info)('Inside TRY Block of file exists or not');
             if (fs_1.default.existsSync(inputs_1.JSON_FILE_PATH)) {
                 (0, core_1.info)('Inside TRY Block of FILE EXISTS');
-                const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
+                jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 if (Object.keys(jsonV7Content).length !== 0) {
                     (0, core_1.info)('Inside TRY Block of FILE LENGTH IS >0');
-                    const coverityIssues = JSON.parse(jsonV7Content.toString());
+                    coverityIssues = JSON.parse(jsonV7Content.toString());
                 }
                 //file exists
             }
         }
         catch (err) {
-            console.error(err);
+            console.error(" JSON File Dosen't Exists ! Please check the file name and then try again");
         }
-        const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
-        const coverityIssues = JSON.parse(jsonV7Content.toString());
+        // const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
+        // const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
         let mergeKeyToIssue = new Map();
         const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
         if (!canCheckCoverity) {
             (0, core_1.warning)('Missing Coverity Connect info. Issues will not be checked against the server.');
         }
         else {
-            const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey);
+            const allMergeKeys = coverityIssues.issues.map((issue) => issue.mergeKey);
             const allUniqueMergeKeys = new Set(allMergeKeys);
             if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
                 try {

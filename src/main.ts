@@ -16,23 +16,26 @@ async function run(): Promise<void> {
 
   info(`Using JSON file path: ${JSON_FILE_PATH}`)
 
+  var jsonV7Content : any
+  var coverityIssues : any
   // TODO validate file exists and is .json?
   try {
     info('Inside TRY Block of file exists or not')
     if (fs.existsSync(JSON_FILE_PATH)) {
       info('Inside TRY Block of FILE EXISTS')
-      const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
+       jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       if(Object.keys(jsonV7Content).length !== 0){
         info('Inside TRY Block of FILE LENGTH IS >0')
-        const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
+         coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
       }
       //file exists
     }
   } catch(err) {
-    console.error(err)
+    console.error(" JSON File Dosen't Exists ! Please check the file name and then try again")
   }
-  const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
-  const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
+
+  // const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
+  // const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
 
   let mergeKeyToIssue = new Map<string, ProjectIssue>()
 
@@ -40,7 +43,7 @@ async function run(): Promise<void> {
   if (!canCheckCoverity) {
     warning('Missing Coverity Connect info. Issues will not be checked against the server.')
   } else {
-    const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
+    const allMergeKeys = coverityIssues.issues.map((issue: { mergeKey: any }) => issue.mergeKey)
     const allUniqueMergeKeys = new Set<string>(allMergeKeys)
 
     if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
