@@ -52,6 +52,7 @@ class CoverityApiService {
     }
     findIssues(projectName, offset, limit) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, core_1.info)('INSIDE THE FIND ISSUE METHIOD :' + projectName);
             const requestBody = {
                 filters: [
                     {
@@ -79,8 +80,8 @@ class CoverityApiService {
                 }
             };
             const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+            (0, core_1.info)('INSIDE THE RESPONSE OF THE COVERITY API CALL : ' + response.statusCode);
             if (response.statusCode < 200 || response.statusCode >= 300) {
-                (0, core_1.info)('INSIDE THE REST CLIENT METHOD : ' + response.statusCode);
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
             }
