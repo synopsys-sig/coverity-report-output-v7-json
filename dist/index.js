@@ -345,6 +345,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
+                (0, core_1.info)('INSIDE The CATCH  BLOCK of error');
                 return Promise.reject(error);
             }
             offset += PAGE_SIZE;
