@@ -34,6 +34,7 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
 
   while (offset <= totalRows && mergeKeyToProjectIssue.size < relevantMergeKeys.size) {
     try {
+      info('INSIDE TRY METHOD OF PROJECT NAME')
       const covProjectIssues = await apiService.findIssues(COVERITY_PROJECT_NAME, offset, PAGE_SIZE)
       info('Checking Coverity server for PROject  NAME...' + covProjectIssues.totalRows)
       totalRows = covProjectIssues.totalRows

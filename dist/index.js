@@ -330,6 +330,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
         const mergeKeyToProjectIssue = new Map();
         while (offset <= totalRows && mergeKeyToProjectIssue.size < relevantMergeKeys.size) {
             try {
+                (0, core_1.info)('INSIDE TRY METHOD OF PROJECT NAME');
                 const covProjectIssues = yield apiService.findIssues(inputs_1.COVERITY_PROJECT_NAME, offset, PAGE_SIZE);
                 (0, core_1.info)('Checking Coverity server for PROject  NAME...' + covProjectIssues.totalRows);
                 totalRows = covProjectIssues.totalRows;
