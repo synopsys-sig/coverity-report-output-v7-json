@@ -23,8 +23,6 @@ async function run(): Promise<void> {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
           const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
-          var count = Object.keys(coverityIssues).length;
-          info('COUNT OF SIZE'+count)
           let mergeKeyToIssue = new Map<string, ProjectIssue>()
           const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
           if (!canCheckCoverity) {
