@@ -340,6 +340,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
+                throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
                 return Promise.reject(error);
             }
             offset += PAGE_SIZE;
