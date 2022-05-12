@@ -116,7 +116,7 @@ async function run(): Promise<void> {
 
           info(`Found ${coverityIssues.issues.length} Coverity issues.`)
       }catch (error){
-        info('The'+ JSON_FILE_PATH + 'file is empty or its an invalid json file !')
+        info('The'+ JSON_FILE_PATH + ' file is empty or its an invalid json file !')
         process.exit(1);
     }
   }

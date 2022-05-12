@@ -510,7 +510,7 @@ function run() {
                     (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
                 }
                 catch (error) {
-                    (0, core_1.info)('The' + inputs_1.JSON_FILE_PATH + 'file is empty or its an invalid json file !');
+                    (0, core_1.info)('The' + inputs_1.JSON_FILE_PATH + ' file is empty or its an invalid json file !');
                     process.exit(1);
                 }
             }
