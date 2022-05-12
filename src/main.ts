@@ -21,7 +21,8 @@ async function run(): Promise<void> {
 
   //to check json file exists or not
   try {
-    if (fs.existsSync(JSON_FILE_PATH)) {
+    if (fs.readFileSync(JSON_FILE_PATH)) {
+      const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       info('INSIDE FILE EXISTS METHOD')
     }
   } catch(err) {

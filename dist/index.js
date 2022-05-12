@@ -417,7 +417,8 @@ function run() {
         // TODO validate file exists and is .json?
         //to check json file exists or not
         try {
-            if (fs_1.default.existsSync(inputs_1.JSON_FILE_PATH)) {
+            if (fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH)) {
+                const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 (0, core_1.info)('INSIDE FILE EXISTS METHOD');
             }
         }
