@@ -17,7 +17,20 @@ async function run(): Promise<void> {
   info(`Using JSON file path: ${JSON_FILE_PATH}`)
 
   // TODO validate file exists and is .json?
+
   const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
+
+  //to check json file exists or not
+  try {
+    if (fs.existsSync(jsonV7Content)) {
+     info('INSIDE FILE EXISTS METHOD')
+    }
+  } catch(err) {
+    info('INSIDE CATCH BLOCK OF FILE NOT EXISTS METHOD')
+    console.error(err)
+    return Promise.reject(err);
+  }
+
   const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
 
   let mergeKeyToIssue = new Map<string, ProjectIssue>()
@@ -33,6 +46,7 @@ async function run(): Promise<void> {
       try {
         mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
       } catch (error: any) {
+        info('inside catch block of json file:' + error)
         setFailed(error as string | Error)
         return Promise.reject()
       }
