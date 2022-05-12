@@ -62,7 +62,7 @@ export class CoverityApiService {
     this.coverityUrl = cleanUrl(coverityUrl)
 
     const authHandler = new BasicCredentialHandler(coverityUsername, coverityPassword, true)
-    info('AUTH HANDLER OUTPUT'+ authHandler)
+    info('AUTH HANDLER OUTPUT'+ authHandler.allowCrossOriginAuthentication + 'other vales' + authHandler.origin)
     this.restClient = new RestClient(APPLICATION_NAME, this.coverityUrl, [authHandler], {
       headers: {
         Accept: 'application/json',
