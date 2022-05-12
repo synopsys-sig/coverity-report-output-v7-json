@@ -1,4 +1,4 @@
-import {debug} from '@actions/core'
+import {debug, info} from '@actions/core'
 import {IRequestQueryParams} from 'typed-rest-client/Interfaces'
 import {BasicCredentialHandler, BearerCredentialHandler} from 'typed-rest-client/Handlers'
 import {RestClient} from 'typed-rest-client/RestClient'
@@ -62,6 +62,7 @@ export class CoverityApiService {
     this.coverityUrl = cleanUrl(coverityUrl)
 
     const authHandler = new BasicCredentialHandler(coverityUsername, coverityPassword, true)
+    info('AUTH HANDLER OUTPUT'+ authHandler)
     this.restClient = new RestClient(APPLICATION_NAME, this.coverityUrl, [authHandler], {
       headers: {
         Accept: 'application/json',

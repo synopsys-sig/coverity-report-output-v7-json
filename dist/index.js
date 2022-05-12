@@ -43,6 +43,7 @@ class CoverityApiService {
     constructor(coverityUrl, coverityUsername, coverityPassword) {
         this.coverityUrl = cleanUrl(coverityUrl);
         const authHandler = new Handlers_1.BasicCredentialHandler(coverityUsername, coverityPassword, true);
+        (0, core_1.info)('AUTH HANDLER OUTPUT' + authHandler);
         this.restClient = new RestClient_1.RestClient(application_constants_1.APPLICATION_NAME, this.coverityUrl, [authHandler], {
             headers: {
                 Accept: 'application/json',
