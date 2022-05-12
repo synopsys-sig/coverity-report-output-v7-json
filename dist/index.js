@@ -419,6 +419,7 @@ function run() {
             if (fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH) && inputs_1.JSON_FILE_PATH.endsWith('.json')) {
                 const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 try {
+                    (0, core_1.info)('To Check the lenght of file ' + Object.entries(jsonV7Content).length);
                     if (Object.entries(jsonV7Content).length !== 0) {
                         const coverityIssues = JSON.parse(jsonV7Content.toString());
                         let mergeKeyToIssue = new Map();
@@ -434,7 +435,6 @@ function run() {
                                     mergeKeyToIssue = yield (0, issue_mapper_1.mapMatchingMergeKeys)(allUniqueMergeKeys);
                                 }
                                 catch (error) {
-                                    (0, core_1.info)('inside catch block of json file:' + error);
                                     (0, core_1.setFailed)(error);
                                     return Promise.reject();
                                 }
@@ -518,7 +518,7 @@ function run() {
             }
         }
         catch (err) {
-            (0, core_1.info)('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct json path.');
+            (0, core_1.info)('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct file path.');
             process.exit(1);
         }
     });

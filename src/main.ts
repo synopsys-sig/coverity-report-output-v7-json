@@ -22,6 +22,7 @@ async function run(): Promise<void> {
     if (fs.readFileSync(JSON_FILE_PATH) && JSON_FILE_PATH.endsWith('.json')) {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
+        info('To Check the lenght of file '+Object.entries(jsonV7Content).length)
         if (Object.entries(jsonV7Content).length !== 0) {
           const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
           let mergeKeyToIssue = new Map<string, ProjectIssue>()
@@ -36,7 +37,6 @@ async function run(): Promise<void> {
               try {
                 mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
               } catch (error: any) {
-                info('inside catch block of json file:' + error)
                 setFailed(error as string | Error)
                 return Promise.reject()
               }
@@ -124,7 +124,7 @@ async function run(): Promise<void> {
   }
 }
   catch(err) {
-    info('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct json path.')
+    info('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct file path.')
     process.exit(1);
   }
 }
