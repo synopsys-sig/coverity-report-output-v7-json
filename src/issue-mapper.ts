@@ -26,7 +26,7 @@ export class ProjectIssue {
 export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Promise<Map<string, ProjectIssue>> {
   info('Checking Coverity server for existing issues...')
   const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
-  info('API SERVICE OUTPUT :'+ apiService.findIssues.length)
+  info('API SERVICE OUTPUT :'+ apiService.coverityUrl+'url :'+COVERITY_URL+'username :'+COVERITY_USERNAME+'password :'+COVERITY_PASSWORD)
 
   let totalRows = 0
   let offset = 0

@@ -79,7 +79,6 @@ class CoverityApiService {
                 }
             };
             const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
-            (0, core_1.debug)('INSIDE REST CLIENT ISSUE: ' + response.result);
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
@@ -326,7 +325,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)('Checking Coverity server for existing issues...');
         const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
-        (0, core_1.info)('API SERVICE OUTPUT :' + apiService.findIssues.length);
+        (0, core_1.info)('API SERVICE OUTPUT :' + apiService.coverityUrl + 'url :' + inputs_1.COVERITY_URL + 'username :' + inputs_1.COVERITY_USERNAME + 'password :' + inputs_1.COVERITY_PASSWORD);
         let totalRows = 0;
         let offset = 0;
         const mergeKeyToProjectIssue = new Map();
