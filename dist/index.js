@@ -341,7 +341,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                (0, core_1.info)('Inside Catch block of find Issues' + error);
+                throw Error('Please check your username or password and try again ! ' + error);
                 //return Promise.reject(error)
             }
             offset += PAGE_SIZE;

@@ -45,7 +45,7 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-      info('Inside Catch block of find Issues'+ error)
+      throw Error('Please check your username or password and try again ! '+ error)
       //return Promise.reject(error)
     }
     offset += PAGE_SIZE
