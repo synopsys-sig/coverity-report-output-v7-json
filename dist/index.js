@@ -79,6 +79,7 @@ class CoverityApiService {
                 }
             };
             const response = yield this.restClient.create('/api/v2/issues/search', requestBody, { queryParameters });
+            (0, core_1.debug)('INSIDE REST CLIENT ISSUE: ' + response.result);
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 (0, core_1.debug)(`Coverity response error: ${response.result}`);
                 return Promise.reject(`Failed to retrieve issues from Coverity for project '${projectName}': ${response.statusCode}`);
