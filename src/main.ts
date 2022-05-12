@@ -22,7 +22,6 @@ async function run(): Promise<void> {
     if (fs.readFileSync(JSON_FILE_PATH) && JSON_FILE_PATH.endsWith('.json')) {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
-        if (Object.entries(jsonV7Content).length !== 0) {
           const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
           let mergeKeyToIssue = new Map<string, ProjectIssue>()
           const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
@@ -116,9 +115,8 @@ async function run(): Promise<void> {
           }
 
           info(`Found ${coverityIssues.issues.length} Coverity issues.`)
-        }
       }catch (error){
-        info('The'+ JSON_FILE_PATH + 'file is empty !')
+        info('The'+ JSON_FILE_PATH + 'file is empty or its an invalid json file !')
         process.exit(1);
     }
   }
