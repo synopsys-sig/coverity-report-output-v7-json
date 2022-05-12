@@ -512,12 +512,13 @@ function run() {
                     }
                 }
                 catch (error) {
-                    throw new Error('The' + inputs_1.JSON_FILE_PATH + 'file is empty !');
+                    (0, core_1.info)('The' + inputs_1.JSON_FILE_PATH + 'file is empty !');
+                    process.exit(1);
                 }
             }
         }
         catch (err) {
-            throw new Error('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct file path.');
+            (0, core_1.info)('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct file path.');
             process.exit(1);
         }
     });

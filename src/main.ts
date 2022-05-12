@@ -118,12 +118,13 @@ async function run(): Promise<void> {
           info(`Found ${coverityIssues.issues.length} Coverity issues.`)
         }
       }catch (error){
-        throw new Error('The'+ JSON_FILE_PATH + 'file is empty !')
+        info('The'+ JSON_FILE_PATH + 'file is empty !')
+        process.exit(1);
     }
   }
 }
   catch(err) {
-    throw new Error('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct file path.')
+    info('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct file path.')
     process.exit(1);
   }
 }
