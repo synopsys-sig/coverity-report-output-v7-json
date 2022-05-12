@@ -341,7 +341,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             catch (error) {
                 throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
-                //return Promise.reject(error)
+                return Promise.reject(error);
             }
             offset += PAGE_SIZE;
         }
