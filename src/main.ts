@@ -16,16 +16,15 @@ async function run(): Promise<void> {
 
   info(`Using JSON file path: ${JSON_FILE_PATH}`)
 
-  //to check json file exists or not
+  //To check json file exists or not
+  
   try {
     if (fs.readFileSync(JSON_FILE_PATH) && JSON_FILE_PATH.endsWith('.json')) {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
         if (Object.entries(jsonV7Content).length !== 0) {
           const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
-          info('INSIDE FILE EXISTS METHOD')
           let mergeKeyToIssue = new Map<string, ProjectIssue>()
-
           const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
           if (!canCheckCoverity) {
             warning('Missing Coverity Connect info. Issues will not be checked against the server.')
@@ -43,30 +42,6 @@ async function run(): Promise<void> {
               }
             }
           }
-
-          // const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
-          // const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
-
-          // let mergeKeyToIssue = new Map<string, ProjectIssue>()
-          //
-          // const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
-          // if (!canCheckCoverity) {
-          //   warning('Missing Coverity Connect info. Issues will not be checked against the server.')
-          // } else {
-          //   const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
-          //   const allUniqueMergeKeys = new Set<string>(allMergeKeys)
-          //
-          //   if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-          //     try {
-          //       mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
-          //     } catch (error: any) {
-          //       info('inside catch block of json file:' + error)
-          //       setFailed(error as string | Error)
-          //       return Promise.reject()
-          //     }
-          //   }
-          // }
-
           const newReviewComments = []
           const actionReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
           const actionIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
@@ -149,7 +124,7 @@ async function run(): Promise<void> {
   }
 }
   catch(err) {
-    info('The json file path is not valid or dosent exist ! .'+JSON_FILE_PATH+' Please check and try again with correct json path.')
+    info('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct json path.')
     process.exit(1);
   }
 }

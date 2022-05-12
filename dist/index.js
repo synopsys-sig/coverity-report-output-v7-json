@@ -414,14 +414,13 @@ function run() {
             return Promise.resolve();
         }
         (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
-        //to check json file exists or not
+        //To check json file exists or not
         try {
             if (fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH) && inputs_1.JSON_FILE_PATH.endsWith('.json')) {
                 const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 try {
                     if (Object.entries(jsonV7Content).length !== 0) {
                         const coverityIssues = JSON.parse(jsonV7Content.toString());
-                        (0, core_1.info)('INSIDE FILE EXISTS METHOD');
                         let mergeKeyToIssue = new Map();
                         const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
                         if (!canCheckCoverity) {
@@ -441,27 +440,6 @@ function run() {
                                 }
                             }
                         }
-                        // const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
-                        // const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
-                        // let mergeKeyToIssue = new Map<string, ProjectIssue>()
-                        //
-                        // const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
-                        // if (!canCheckCoverity) {
-                        //   warning('Missing Coverity Connect info. Issues will not be checked against the server.')
-                        // } else {
-                        //   const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
-                        //   const allUniqueMergeKeys = new Set<string>(allMergeKeys)
-                        //
-                        //   if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-                        //     try {
-                        //       mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
-                        //     } catch (error: any) {
-                        //       info('inside catch block of json file:' + error)
-                        //       setFailed(error as string | Error)
-                        //       return Promise.reject()
-                        //     }
-                        //   }
-                        // }
                         const newReviewComments = [];
                         const actionReviewComments = yield (0, pull_request_1.getExistingReviewComments)().then(comments => comments.filter(comment => comment.body.includes(reporting_1.COMMENT_PREFACE)));
                         const actionIssueComments = yield (0, pull_request_1.getExistingIssueComments)().then(comments => comments.filter(comment => { var _a; return (_a = comment.body) === null || _a === void 0 ? void 0 : _a.includes(reporting_1.COMMENT_PREFACE); }));
@@ -540,7 +518,7 @@ function run() {
             }
         }
         catch (err) {
-            (0, core_1.info)('The json file path is not valid or dosent exist ! .' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct json path.');
+            (0, core_1.info)('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct json path.');
             process.exit(1);
         }
     });
