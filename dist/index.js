@@ -416,6 +416,17 @@ function run() {
         (0, core_1.info)(`Using JSON file path: ${inputs_1.JSON_FILE_PATH}`);
         // TODO validate file exists and is .json?
         const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
+        //to check json file exists or not
+        try {
+            if (fs_1.default.existsSync(jsonV7Content)) {
+                (0, core_1.info)('INSIDE FILE EXISTS METHOD');
+            }
+        }
+        catch (err) {
+            (0, core_1.info)('INSIDE CATCH BLOCK OF FILE NOT EXISTS METHOD');
+            console.error(err);
+            return Promise.reject(err);
+        }
         const coverityIssues = JSON.parse(jsonV7Content.toString());
         let mergeKeyToIssue = new Map();
         const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
@@ -430,6 +441,7 @@ function run() {
                     mergeKeyToIssue = yield (0, issue_mapper_1.mapMatchingMergeKeys)(allUniqueMergeKeys);
                 }
                 catch (error) {
+                    (0, core_1.info)('inside catch block of json file:' + error);
                     (0, core_1.setFailed)(error);
                     return Promise.reject();
                 }
