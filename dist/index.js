@@ -325,6 +325,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, core_1.info)('Checking Coverity server for existing issues...');
         const apiService = new coverity_api_1.CoverityApiService(inputs_1.COVERITY_URL, inputs_1.COVERITY_USERNAME, inputs_1.COVERITY_PASSWORD);
+        (0, core_1.info)('API SERVICE OUTPUT :' + apiService.findIssues.length);
         let totalRows = 0;
         let offset = 0;
         const mergeKeyToProjectIssue = new Map();
@@ -340,7 +341,8 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                return Promise.reject(error);
+                (0, core_1.info)('Inside Catch block of find Issues' + error);
+                //return Promise.reject(error)
             }
             offset += PAGE_SIZE;
         }

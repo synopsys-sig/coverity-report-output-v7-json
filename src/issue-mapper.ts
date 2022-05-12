@@ -26,6 +26,7 @@ export class ProjectIssue {
 export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Promise<Map<string, ProjectIssue>> {
   info('Checking Coverity server for existing issues...')
   const apiService = new CoverityApiService(COVERITY_URL, COVERITY_USERNAME, COVERITY_PASSWORD)
+  info('API SERVICE OUTPUT :'+ apiService.findIssues.length)
 
   let totalRows = 0
   let offset = 0
@@ -44,7 +45,8 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-      return Promise.reject(error)
+      info('Inside Catch block of find Issues'+ error)
+      //return Promise.reject(error)
     }
     offset += PAGE_SIZE
   }
