@@ -419,7 +419,6 @@ function run() {
             if (fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH) && inputs_1.JSON_FILE_PATH.endsWith('.json')) {
                 const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 try {
-                    (0, core_1.info)('To Check the lenght of file ' + Object.entries(jsonV7Content).length);
                     if (Object.entries(jsonV7Content).length !== 0) {
                         const coverityIssues = JSON.parse(jsonV7Content.toString());
                         let mergeKeyToIssue = new Map();

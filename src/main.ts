@@ -22,7 +22,6 @@ async function run(): Promise<void> {
     if (fs.readFileSync(JSON_FILE_PATH) && JSON_FILE_PATH.endsWith('.json')) {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
-        info('To Check the lenght of file '+Object.entries(jsonV7Content).length)
         if (Object.entries(jsonV7Content).length !== 0) {
           const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
           let mergeKeyToIssue = new Map<string, ProjectIssue>()
