@@ -420,6 +420,8 @@ function run() {
                 const jsonV7Content = fs_1.default.readFileSync(inputs_1.JSON_FILE_PATH);
                 try {
                     const coverityIssues = JSON.parse(jsonV7Content.toString());
+                    var count = Object.keys(coverityIssues).length;
+                    (0, core_1.info)('COUNT OF SIZE' + count);
                     let mergeKeyToIssue = new Map();
                     const canCheckCoverity = inputs_1.COVERITY_URL && inputs_1.COVERITY_USERNAME && inputs_1.COVERITY_PASSWORD && inputs_1.COVERITY_PROJECT_NAME;
                     if (!canCheckCoverity) {
