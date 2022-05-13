@@ -340,7 +340,9 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
+                (0, core_1.info)('BOOLEAN VALUE :' + error.toString().startsWith("Authentication"));
                 if (error.toString().startsWith("Authentication")) {
+                    (0, core_1.info)('inside the catch the block of authentication');
                     throw new Error('Please check your username or password and try again ' + error);
                 }
                 else {

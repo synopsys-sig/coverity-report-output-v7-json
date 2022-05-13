@@ -44,7 +44,9 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
+      info('BOOLEAN VALUE :'+ error.toString().startsWith("Authentication"))
       if(error.toString().startsWith("Authentication")){
+        info('inside the catch the block of authentication')
         throw new Error('Please check your username or password and try again '+ error)
       }
       else {
