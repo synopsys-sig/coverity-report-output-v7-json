@@ -44,13 +44,15 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-      info('BOOLEAN VALUE :'+ error.toString().match("Authentication failed"))
+
       if(error.toString().match('Authentication failed')){
-        info('inside the catch the block of authentication')
         throw new Error('Please check your username or password and try again '+ error)
       }
-      else {
+      else if(error.toString().match("eventId")) {
         throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
+      }
+      else {
+        throw new Error("Inavlid URL ! " + error);
       }
       return Promise.reject(error)
     }

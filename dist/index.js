@@ -340,13 +340,14 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                (0, core_1.info)('BOOLEAN VALUE :' + error.toString().match("Authentication failed"));
                 if (error.toString().match('Authentication failed')) {
-                    (0, core_1.info)('inside the catch the block of authentication');
                     throw new Error('Please check your username or password and try again ' + error);
                 }
-                else {
+                else if (error.toString().match("eventId")) {
                     throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
+                }
+                else {
+                    throw new Error("Inavlid URL ! " + error);
                 }
                 return Promise.reject(error);
             }
