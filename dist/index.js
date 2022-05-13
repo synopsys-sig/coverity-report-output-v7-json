@@ -341,13 +341,13 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             catch (error) {
                 if (error.toString().match('Authentication failed')) {
-                    throw new Error('Please check your username or password and try again ' + error);
+                    throw new Error('Please check your username or password and try again ! ' + error);
                 }
                 else if (error.toString().match("eventId")) {
-                    throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
+                    throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
                 }
                 else {
-                    throw new Error("Inavlid URL ! " + error);
+                    throw new Error("Inavlid URL , please check the configuration in your workflow " + error);
                 }
                 return Promise.reject(error);
             }
