@@ -340,7 +340,15 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey, projectIssue));
             }
             catch (error) {
-                throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
+                if (error.toString().match('Authentication failed')) {
+                    throw new Error('Please check your username or password and try again ! ' + error);
+                }
+                else if (error.toString().match("eventId")) {
+                    throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
+                }
+                else {
+                    throw new Error("Inavlid URL , please check the configuration in your workflow " + error);
+                }
                 return Promise.reject(error);
             }
             offset += PAGE_SIZE;

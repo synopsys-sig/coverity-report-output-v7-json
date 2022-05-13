@@ -44,7 +44,16 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-      throw new Error("Project doesn’t exist, please check the configuration in your workflow" + error);
+
+      if(error.toString().match('Authentication failed')){
+        throw new Error('Please check your username or password and try again ! '+ error)
+      }
+      else if(error.toString().match("eventId")) {
+        throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
+      }
+      else {
+        throw new Error("Inavlid URL , please check the configuration in your workflow " + error);
+      }
       return Promise.reject(error)
     }
     offset += PAGE_SIZE
