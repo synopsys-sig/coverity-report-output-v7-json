@@ -349,7 +349,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                 else {
                     (0, core_1.info)('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
                 }
-                return Promise.reject(error);
+                //return Promise.reject(error)
             }
             offset += PAGE_SIZE;
         }
