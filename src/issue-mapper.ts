@@ -46,7 +46,7 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
     } catch (error: any) {
 
       if(error.toString().match('Authentication failed')){
-        info('Error : Unable to authenticate to Coverity Connect server - please check your username and password : '+error+'.')
+        info('Error : Unable to authenticate to Coverity Connect server - please check your username and password : Authentication failed.')
         process.exit(1);
       }
       else if(error.toString().match("eventId")) {

@@ -341,7 +341,7 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             catch (error) {
                 if (error.toString().match('Authentication failed')) {
-                    (0, core_1.info)('Error : Unable to authenticate to Coverity Connect server - please check your username and password : ' + error + '.');
+                    (0, core_1.info)('Error : Unable to authenticate to Coverity Connect server - please check your username and password : Authentication failed.');
                     process.exit(1);
                 }
                 else if (error.toString().match("eventId")) {
