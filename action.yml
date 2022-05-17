@@ -1,4 +1,7 @@
 name: 'Coverity json-output-v7 Report'
+branding:
+  icon: 'shield'
+  color: 'purple'
 description: 'Parse Coverity json-output-v7 and report on the results within GitHub'
 author: 'Synopsys Inc'
 inputs:
