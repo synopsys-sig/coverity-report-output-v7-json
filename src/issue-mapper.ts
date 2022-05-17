@@ -46,13 +46,13 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
     } catch (error: any) {
 
       if(error.toString().match('Authentication failed')){
-        throw new Error('Please check your username or password and try again ! '+ error)
+        info('Error : Unable to authenticate to Coverity Connect server - please check your username and password : '+error+'.')
       }
       else if(error.toString().match("eventId")) {
         throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
       }
       else {
-        throw new Error("Inavlid URL , please check the configuration in your workflow " + error);
+        info('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
       }
       return Promise.reject(error)
     }

@@ -116,13 +116,13 @@ async function run(): Promise<void> {
 
           info(`Found ${coverityIssues.issues.length} Coverity issues.`)
       }catch (error){
-        info('The'+ JSON_FILE_PATH + ' file is empty or its an invalid json file !')
+        info('Error : Unable to open and parse the Coverity results output file : File is empty or its an invalid json file.')
         process.exit(1);
     }
   }
 }
   catch(err) {
-    info('The json file path is not valid or dosent exist !'+JSON_FILE_PATH+' Please check and try again with correct file path.')
+    info('Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn\'t exist.')
     process.exit(1);
   }
 }
