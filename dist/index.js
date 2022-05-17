@@ -342,14 +342,15 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             catch (error) {
                 if (error.toString().match('Authentication failed')) {
                     (0, core_1.info)('Error : Unable to authenticate to Coverity Connect server - please check your username and password : ' + error + '.');
+                    process.exit(1);
                 }
                 else if (error.toString().match("eventId")) {
                     throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
                 }
                 else {
                     (0, core_1.info)('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
+                    process.exit(1);
                 }
-                //return Promise.reject(error)
             }
             offset += PAGE_SIZE;
         }
