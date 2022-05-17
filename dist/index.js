@@ -341,15 +341,16 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
             }
             catch (error) {
                 if (error.toString().match('Authentication failed')) {
-                    throw new Error('Please check your username or password and try again ! ' + error);
+                    (0, core_1.info)('Error : Unable to authenticate to Coverity Connect server - please check your username and password : Authentication failed.');
+                    process.exit(1);
                 }
                 else if (error.toString().match("eventId")) {
                     throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
                 }
                 else {
-                    throw new Error("Inavlid URL , please check the configuration in your workflow " + error);
+                    (0, core_1.info)('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
+                    process.exit(1);
                 }
-                return Promise.reject(error);
             }
             offset += PAGE_SIZE;
         }
@@ -519,13 +520,13 @@ function run() {
                     (0, core_1.info)(`Found ${coverityIssues.issues.length} Coverity issues.`);
                 }
                 catch (error) {
-                    (0, core_1.info)('The' + inputs_1.JSON_FILE_PATH + ' file is empty or its an invalid json file !');
+                    (0, core_1.info)('Error : Unable to open and parse the Coverity results output file : File is empty or its an invalid json file.');
                     process.exit(1);
                 }
             }
         }
         catch (err) {
-            (0, core_1.info)('The json file path is not valid or dosent exist !' + inputs_1.JSON_FILE_PATH + ' Please check and try again with correct file path.');
+            (0, core_1.info)('Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn\'t exist.');
             process.exit(1);
         }
     });
