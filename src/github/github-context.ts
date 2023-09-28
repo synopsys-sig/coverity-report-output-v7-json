@@ -38,6 +38,5 @@ export function relativizePath(path: string): string {
   if (path.startsWith("/__w")) {
       path = "/home/runner/work" + path.substring("/__w".length)
   }
-  info(path.substring(length + 1))
   return path.substring(length + 1)
 }
