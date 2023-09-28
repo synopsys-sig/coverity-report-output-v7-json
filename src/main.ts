@@ -98,7 +98,7 @@ async function run(): Promise<void> {
           for (const comment of actionReviewComments) {
             if (isPresent(comment.body)) {
               info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
-              updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
+              // updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
             }
           }
 
@@ -114,7 +114,7 @@ async function run(): Promise<void> {
             createReview(newReviewComments)
           }
 
-          info(`Found ${coverityIssues.issues.length} Coverity issues.`)
+          // info(`Found ${coverityIssues.issues.length} Coverity issues.`)
       }catch (error){
         info('Error : Unable to open and parse the Coverity results output file : File is empty or its an invalid json file.')
         process.exit(1);
