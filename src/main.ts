@@ -128,7 +128,7 @@ async function run(): Promise<void> {
 }
 
 function isInDiff(issue: IssueOccurrence, diffMap: DiffMap): boolean {
-  const diffHunks = diffMap.get(issue.mainEventFilePathname)
+  const diffHunks = diffMap.get(relativizePath(issue.mainEventFilePathname))
 
   if (!diffHunks) {
     return false

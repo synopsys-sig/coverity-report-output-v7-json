@@ -135,12 +135,13 @@ function getPullRequestNumber() {
 }
 exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
-    var _a;
-    let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
-    if (!length) {
-        length = 'undefined'.length;
-    }
-    return path.substring(length + 1);
+    var _a, _b;
+    // owner/repo-name
+    let repo = (_a = process.env.GITHUB_REPOSITORY) !== null && _a !== void 0 ? _a : "undefined";
+    let repo_owner = (_b = process.env.GITHUB_REPOSITORY_OWNER) !== null && _b !== void 0 ? _b : "undefined";
+    let repo_name = repo.substring(repo_owner.length + 1);
+    // path is in the format of ../workspace/{repo-name}/{RELATIVE_PATH}
+    return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1);
 }
 exports.relativizePath = relativizePath;
 
@@ -532,7 +533,7 @@ function run() {
     });
 }
 function isInDiff(issue, diffMap) {
-    const diffHunks = diffMap.get(issue.mainEventFilePathname);
+    const diffHunks = diffMap.get((0, github_context_1.relativizePath)(issue.mainEventFilePathname));
     if (!diffHunks) {
         return false;
     }
@@ -616,6 +617,18 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 `;
 }
 exports.createIssueCommentMessage = createIssueCommentMessage;
+// naive Z-Table, can be optimized to terminate early
+function zTable(input) {
+    let table = new Array(input.length).fill(0);
+    for (let i = 1; i < input.length; i++) {
+        for (let j = 0; j < input.length - i; j++) {
+            if (input.charAt(j) != input.charAt(i + j))
+                continue;
+            table[i]++;
+        }
+    }
+    return table;
+}
 function getDiffMap(rawDiff) {
     var _a;
     console.info('Gathering diffs...');
@@ -623,11 +636,11 @@ function getDiffMap(rawDiff) {
     let path = exports.UNKNOWN_FILE;
     for (const line of rawDiff.split('\n')) {
         if (line.startsWith('diff --git')) {
-            // TODO: Handle spaces in path
-            path = `${process.env.GITHUB_WORKSPACE}/${line.split(' ')[2].substring(2)}`;
-            if (path === undefined) {
-                path = exports.UNKNOWN_FILE;
-            }
+            // this should give `diff --git a/path b/path`
+            // to get the file itself, we can use longest string match on `path b/path`
+            // since we definitely know paths are equal, path must be the longest string
+            path = line.substring("diff --git a/".length);
+            path = path.substring(0, Math.max(...zTable(path)));
             diffMap.set(path, []);
         }
         if (line.startsWith('@@')) {
