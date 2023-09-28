@@ -137,7 +137,7 @@ function getPullRequestNumber() {
 exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
     var _a;
-    let repo_name = (_a = process.env.GITHUB_REPO) !== null && _a !== void 0 ? _a : "undefined";
+    let repo_name = (_a = process.env.GITHUB_REPOSITORY) !== null && _a !== void 0 ? _a : "undefined";
     (0, core_1.info)(repo_name);
     (0, core_1.info)(path);
     // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}

@@ -33,7 +33,7 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
-  let repo_name = process.env.GITHUB_REPO ?? "undefined"
+  let repo_name = process.env.GITHUB_REPOSITORY ?? "undefined"
     info(repo_name)
     info(path)
   // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
