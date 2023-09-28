@@ -146,4 +146,4 @@ function createReviewComment(issue: IssueOccurrence, commentBody: string): NewRe
   }
 }
 
-run()
+// run()
