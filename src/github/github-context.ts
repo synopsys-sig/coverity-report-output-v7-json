@@ -33,5 +33,7 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
+    info(path)
+    info(__dirname)
   return path.substring(__dirname.length - 4)
 }
