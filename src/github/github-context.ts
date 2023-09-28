@@ -1,5 +1,6 @@
 import {PullRequest} from '../_namespaces/github'
 import {context} from '@actions/github'
+import {info} from "@actions/core";
 
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment']
 
@@ -32,10 +33,10 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
-  let length = process.env.GITHUB_WORKSPACE?.length
-  if (!length) {
-    length = 'undefined'.length
+  let length = (process.env.GITHUB_WORKSPACE ?? "undefined").length
+  // if workspace is /__w, replace as /home/runner/work
+  if (path.startsWith("/__w")) {
+      path = "/home/runner/work" + path.substring("/__w".length)
   }
-
   return path.substring(length + 1)
 }
