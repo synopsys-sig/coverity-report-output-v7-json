@@ -1,0 +1,401 @@
+{
+  "type" : "Coverity issues",
+  "formatVersion" : 7,
+  "suppressedIssueCount" : 262,
+  "issues" : [
+    {
+      "mergeKey" : "994fc6eaeabe2f3d34c7205b417bb430",
+      "occurrenceCountForMK" : 1,
+      "occurrenceNumberInMK" : 1,
+      "referenceOccurrenceCountForMK" : 1,
+      "checkerName" : "AUTOSAR C++14 A8-5-2",
+      "subcategory" : "none",
+      "type" : "AUTOSAR_Cpp14_A8_5_2",
+      "code-language" : "c/c++",
+      "extra" : "a",
+      "domain" : "STATIC_C",
+      "language" : "C++",
+      "mainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "strippedMainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "mainEventLineNumber" : 30,
+      "properties" : {},
+      "functionDisplayName" : "swift::set_external_functions(swift::ExternalFunctions const &)",
+      "functionMangledName" : "_ZN5swift22set_external_functionsERKNS_17ExternalFunctionsE",
+      "localStatus" : null,
+      "ordered" : true,
+      "events" : [
+        {
+          "covLStrEventDescription" : "{CovLStrv2{{t{Initializing variable {0} without using braced-initialization {L}{R}.}{{code{a}}}}}}",
+          "eventDescription" : "Initializing variable \"a\" without using braced-initialization {}.",
+          "eventNumber" : 1,
+          "eventTreePosition" : "1",
+          "eventSet" : 0,
+          "eventTag" : "autosar_cpp14_a8_5_2_violation",
+          "filePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "strippedFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "lineNumber" : 30,
+          "main" : true,
+          "moreInformationId" : null,
+          "remediation" : false,
+          "events" : null
+        }
+      ],
+      "stateOnServer" : {
+        "cid" : 37253,
+        "stream" : "TestStarlingCore",
+        "triage" : {
+          "action" : "Undecided",
+          "classification" : "Unclassified",
+          "externalReference" : "",
+          "fixTarget" : "Untargeted",
+          "legacy" : "False",
+          "owner" : "",
+          "severity" : "Unspecified"
+        },
+        "customTriage" : {},
+        "presentInReferenceSnapshot" : false,
+        "firstDetectedDateTime" : "2023-09-27T05:31:05+00:00",
+        "components" : [
+          "Other"
+        ],
+        "cached" : false,
+        "retrievalDateTime" : "2023-09-28T01:30:21+00:00",
+        "ownerLdapServerName" : ""
+      },
+      "checkerProperties" : {
+        "category" : "Coding standard violation",
+        "categoryDescription" : "Coding standard violation",
+        "cweCategory" : "665",
+        "weaknessIdCategory" : "none",
+        "issueKinds" : [
+          "QUALITY"
+        ],
+        "eventSetCaptions" : [],
+        "impact" : "Low",
+        "impactDescription" : "Low",
+        "subcategoryLocalEffect" : "AUTOSAR Violation",
+        "subcategoryShortDescription" : "AUTOSAR C++14 Declarators",
+        "subcategoryLongDescription" : "Braced-initialization {}, without equals sign, shall be used for variable initialization.",
+        "MISRACategory" : "Required"
+      }
+    },
+    {
+      "mergeKey" : "1fb485157a7bdd02407264ba7b17e9bb",
+      "occurrenceCountForMK" : 1,
+      "occurrenceNumberInMK" : 1,
+      "referenceOccurrenceCountForMK" : 1,
+      "checkerName" : "AUTOSAR C++14 A3-9-1",
+      "subcategory" : "none",
+      "type" : "AUTOSAR_Cpp14_A3_9_1",
+      "code-language" : "c/c++",
+      "extra" : "a",
+      "domain" : "STATIC_C",
+      "language" : "C++",
+      "mainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "strippedMainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "mainEventLineNumber" : 30,
+      "properties" : {},
+      "functionDisplayName" : "swift::set_external_functions(swift::ExternalFunctions const &)",
+      "functionMangledName" : "_ZN5swift22set_external_functionsERKNS_17ExternalFunctionsE",
+      "localStatus" : null,
+      "ordered" : true,
+      "events" : [
+        {
+          "covLStrEventDescription" : "{CovLStrv2{{t{Using basic numerical type {0} rather than a typedef that includes size and signedness information.}{{code{int}}}}}}",
+          "eventDescription" : "Using basic numerical type \"int\" rather than a typedef that includes size and signedness information.",
+          "eventNumber" : 1,
+          "eventTreePosition" : "1",
+          "eventSet" : 0,
+          "eventTag" : "autosar_cpp14_a3_9_1_violation",
+          "filePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "strippedFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "lineNumber" : 30,
+          "main" : true,
+          "moreInformationId" : null,
+          "remediation" : false,
+          "events" : null
+        }
+      ],
+      "stateOnServer" : {
+        "cid" : 37252,
+        "stream" : "TestStarlingCore",
+        "triage" : {
+          "action" : "Undecided",
+          "classification" : "Unclassified",
+          "externalReference" : "",
+          "fixTarget" : "Untargeted",
+          "legacy" : "False",
+          "owner" : "",
+          "severity" : "Unspecified"
+        },
+        "customTriage" : {},
+        "presentInReferenceSnapshot" : false,
+        "firstDetectedDateTime" : "2023-09-27T05:31:05+00:00",
+        "components" : [
+          "Other"
+        ],
+        "cached" : false,
+        "retrievalDateTime" : "2023-09-28T01:30:21+00:00",
+        "ownerLdapServerName" : ""
+      },
+      "checkerProperties" : {
+        "category" : "Coding standard violation",
+        "categoryDescription" : "Coding standard violation",
+        "cweCategory" : "710",
+        "weaknessIdCategory" : "none",
+        "issueKinds" : [
+          "QUALITY"
+        ],
+        "eventSetCaptions" : [],
+        "impact" : "Low",
+        "impactDescription" : "Low",
+        "subcategoryLocalEffect" : "AUTOSAR Violation",
+        "subcategoryShortDescription" : "AUTOSAR C++14 Basic Concepts",
+        "subcategoryLongDescription" : "Fixed width integer types from <cstdint>, indicating the size and signedness, shall be used in place of the basic numerical types.",
+        "MISRACategory" : "Required"
+      }
+    },
+    {
+      "mergeKey" : "97b7999451d3fa9395c88dff6ba45d24",
+      "occurrenceCountForMK" : 1,
+      "occurrenceNumberInMK" : 1,
+      "referenceOccurrenceCountForMK" : 1,
+      "checkerName" : "AUTOSAR C++14 A5-2-2",
+      "subcategory" : "none",
+      "type" : "AUTOSAR_Cpp14_A5_2_2",
+      "code-language" : "c/c++",
+      "extra" : "a",
+      "domain" : "STATIC_C",
+      "language" : "C++",
+      "mainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "strippedMainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "mainEventLineNumber" : 31,
+      "properties" : {},
+      "functionDisplayName" : "swift::set_external_functions(swift::ExternalFunctions const &)",
+      "functionMangledName" : "_ZN5swift22set_external_functionsERKNS_17ExternalFunctionsE",
+      "localStatus" : null,
+      "ordered" : true,
+      "events" : [
+        {
+          "covLStrEventDescription" : "{CovLStrv2{{t{Using traditional C-style cast in {0}.}{{code{(void)a}}}}}}",
+          "eventDescription" : "Using traditional C-style cast in \"(void)a\".",
+          "eventNumber" : 1,
+          "eventTreePosition" : "1",
+          "eventSet" : 0,
+          "eventTag" : "autosar_cpp14_a5_2_2_violation",
+          "filePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "strippedFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "lineNumber" : 31,
+          "main" : true,
+          "moreInformationId" : null,
+          "remediation" : false,
+          "events" : null
+        }
+      ],
+      "stateOnServer" : {
+        "cid" : 37251,
+        "stream" : "TestStarlingCore",
+        "triage" : {
+          "action" : "Undecided",
+          "classification" : "Unclassified",
+          "externalReference" : "",
+          "fixTarget" : "Untargeted",
+          "legacy" : "False",
+          "owner" : "",
+          "severity" : "Unspecified"
+        },
+        "customTriage" : {},
+        "presentInReferenceSnapshot" : false,
+        "firstDetectedDateTime" : "2023-09-27T05:31:05+00:00",
+        "components" : [
+          "Other"
+        ],
+        "cached" : false,
+        "retrievalDateTime" : "2023-09-28T01:30:21+00:00",
+        "ownerLdapServerName" : ""
+      },
+      "checkerProperties" : {
+        "category" : "Coding standard violation",
+        "categoryDescription" : "Coding standard violation",
+        "cweCategory" : "704",
+        "weaknessIdCategory" : "none",
+        "issueKinds" : [
+          "QUALITY"
+        ],
+        "eventSetCaptions" : [],
+        "impact" : "Low",
+        "impactDescription" : "Low",
+        "subcategoryLocalEffect" : "AUTOSAR Violation",
+        "subcategoryShortDescription" : "AUTOSAR C++14 Expressions",
+        "subcategoryLongDescription" : "Traditional C-style casts shall not be used.",
+        "MISRACategory" : "Required"
+      }
+    },
+    {
+      "mergeKey" : "6658cc4988e25a1e27dc91f9d7d48f08",
+      "occurrenceCountForMK" : 1,
+      "occurrenceNumberInMK" : 1,
+      "referenceOccurrenceCountForMK" : 1,
+      "checkerName" : "AUTOSAR C++14 A7-1-1",
+      "subcategory" : "none",
+      "type" : "AUTOSAR_Cpp14_A7_1_1",
+      "code-language" : "c/c++",
+      "extra" : "a",
+      "domain" : "STATIC_C",
+      "language" : "C++",
+      "mainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "strippedMainEventFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "mainEventLineNumber" : 30,
+      "properties" : {},
+      "functionDisplayName" : "swift::set_external_functions(swift::ExternalFunctions const &)",
+      "functionMangledName" : "_ZN5swift22set_external_functionsERKNS_17ExternalFunctionsE",
+      "localStatus" : null,
+      "ordered" : false,
+      "events" : [
+        {
+          "covLStrEventDescription" : "{CovLStrv2{{t{The variable {0} has a non-const type, however its value is never changed. Consider adding a const qualifier to the variable type.}{{code{a}}}}}}",
+          "eventDescription" : "The variable \"a\" has a non-const type, however its value is never changed. Consider adding a const qualifier to the variable type.",
+          "eventNumber" : 1,
+          "eventTreePosition" : "1",
+          "eventSet" : 0,
+          "eventTag" : "autosar_cpp14_a7_1_1_violation",
+          "filePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "strippedFilePathname" : "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+          "lineNumber" : 30,
+          "main" : true,
+          "moreInformationId" : null,
+          "remediation" : false,
+          "events" : null
+        }
+      ],
+      "stateOnServer" : {
+        "cid" : 37249,
+        "stream" : "TestStarlingCore",
+        "triage" : {
+          "action" : "Undecided",
+          "classification" : "Unclassified",
+          "externalReference" : "",
+          "fixTarget" : "Untargeted",
+          "legacy" : "False",
+          "owner" : "",
+          "severity" : "Unspecified"
+        },
+        "customTriage" : {},
+        "presentInReferenceSnapshot" : false,
+        "firstDetectedDateTime" : "2023-09-27T05:31:05+00:00",
+        "components" : [
+          "Other"
+        ],
+        "cached" : false,
+        "retrievalDateTime" : "2023-09-28T01:30:21+00:00",
+        "ownerLdapServerName" : ""
+      },
+      "checkerProperties" : {
+        "category" : "Coding standard violation",
+        "categoryDescription" : "Coding standard violation",
+        "cweCategory" : "710",
+        "weaknessIdCategory" : "none",
+        "issueKinds" : [
+          "QUALITY"
+        ],
+        "eventSetCaptions" : [],
+        "impact" : "Low",
+        "impactDescription" : "Low",
+        "subcategoryLocalEffect" : "AUTOSAR Violation",
+        "subcategoryShortDescription" : "AUTOSAR C++14 Declarations",
+        "subcategoryLongDescription" : "Constexpr or const specifiers shall be used for immutable data declaration.",
+        "MISRACategory" : "Required"
+      }
+    }
+  ],
+  "desktopAnalysisSettings" : {
+    "analysisDateTime" : "2023-09-28T01:30:07+00:00",
+    "covRunDesktopArgs" : [
+      "--dir",
+      "iDir",
+      "--strip-path",
+      "/__w/starling-core/starling-core/build",
+      "--url",
+      "https://poc376.coverity.synopsys.com",
+      "--user",
+      "admin",
+      "--stream",
+      "TestStarlingCore",
+      "--present-in-reference",
+      "false",
+      "--ignore-uncapturable-inputs",
+      "true",
+      "--set-new-defect-owner",
+      "false",
+      "--allow-suffix-match",
+      "--json-output-v7",
+      "coverity-results.json",
+      "--coding-standard-config",
+      "/tmp/coverity/cov-analysis-linux64-2023.6.2/config/coding-standards/autosarcpp14/autosarcpp14-required-only.config",
+      "--data-dir",
+      "/__w/starling-core/starling-core/build/data-coverity",
+      ".github/workflows/main.yml",
+      "license.dat",
+      "public_types/src/external_functions.cc",
+      "public_types/src/logger.cc"
+    ],
+    "effectiveStripPaths" : [
+      "/__w/starling-core/starling-core/build"
+    ],
+    "analysisScopePathnames" : [
+      "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "/__w/starling-core/starling-core/public_types/src/logger.cc"
+    ],
+    "strippedAnalysisScopePathnames" : [
+      "/__w/starling-core/starling-core/public_types/src/external_functions.cc",
+      "/__w/starling-core/starling-core/public_types/src/logger.cc"
+    ],
+    "auxiliaryScopePathnames" : [],
+    "strippedAuxiliaryScopePathnames" : [],
+    "referenceSnapshot" : {
+      "snapshotId" : 10022,
+      "codeVersionDateTime" : "2023-09-27T05:06:48+00:00",
+      "description" : "",
+      "version" : "",
+      "analysisVersion" : "2023.6.2",
+      "analysisVersionOverride" : "",
+      "target" : ""
+    },
+    "effectiveAnalysisSettings" : {
+      "covAnalyzeArgs" : [
+        "--spotbugs-include",
+        "coverity-default",
+        "--spotbugs-exclude",
+        "desktop",
+        "--all",
+        "--enable-exceptions",
+        "--enable",
+        "PARSE_ERROR"
+      ],
+      "fileOptions" : [
+        {
+          "optionName" : "coding-standard-config",
+          "fileContents" : "{\n    \"_comment_warning\" : [\n\n    \"Do not edit this file! Make a copy and edit it to produce your own configuration\",\n    \"Configuration for AUTOSAR C++14, rule categories: Required\"\n\n    ],\n\n    \"version\": \"2.0\",\n    \"standard\": \"autosarc++14\",\n    \"title\": \"AUTOSAR C++14 Required Only\",\n    \"deviations\": [\n        {\n            \"deviation\": \"M0-1-10\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A0-1-6\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A1-4-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A2-8-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A2-10-5\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A2-13-5\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A3-1-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A3-1-6\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"M5-0-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A5-1-6\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A5-1-8\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A5-1-9\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"M5-2-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A5-2-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A6-5-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A6-5-4\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A7-2-5\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A8-4-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A8-4-4\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A8-5-4\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"M10-1-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"M10-2-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A10-4-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A11-0-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A12-4-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A12-8-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A12-8-7\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A13-5-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A14-1-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A14-5-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A14-5-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A15-1-1\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"A15-1-3\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        },\n        {\n            \"deviation\": \"M16-3-2\",\n            \"reason\": \"This rule is currently disabled in the analysis configuration.\"\n        }\n    ]\n}"
+        }
+      ],
+      "fileCheckerOptions" : []
+    },
+    "relativeTo" : "/__w/starling-core/starling-core/build",
+    "intermediateDir" : "/__w/starling-core/starling-core/build/iDir"
+  },
+  "error" : null,
+  "warnings" : [
+    {
+      "errorType" : "implicitlyDisabledCheckerForLanguages",
+      "errorSubType" : null,
+      "errorMessage" : {
+        "CovLStr" : "{CovLStrv2{{t{[WARNING] The checker {0} was disabled because it requires running in whole-program mode.}{\"AUTOSAR_INCLUDE\"}}}}",
+        "en" : "[WARNING] The checker \"AUTOSAR_INCLUDE\" was disabled because it requires running in whole-program mode."
+      },
+      "disabledCheckerName" : "AUTOSAR_INCLUDE",
+      "disabledForLanguages" : [
+        "C/C++"
+      ]
+    }
+  ]
+}
