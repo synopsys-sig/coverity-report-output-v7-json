@@ -33,7 +33,10 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
-    info(path)
-    info(__dirname)
-  return path.substring(__dirname.length - 4)
+  let length = (process.env.GITHUB_WORKSPACE ?? "undefined").length
+  // if workspace is /__w, replace as /home/runner/work
+  if (path.startsWith("/__w")) {
+      path = "/home/runner/work" + path.substring("/__w".length)
+  }
+  return path.substring(length + 1)
 }
