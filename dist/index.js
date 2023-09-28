@@ -107,7 +107,6 @@ exports.cleanUrl = cleanUrl;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.relativizePath = exports.getPullRequestNumber = exports.getSha = exports.isPullRequest = void 0;
 const github_1 = __nccwpck_require__(5438);
-const core_1 = __nccwpck_require__(2186);
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment'];
 function isPullRequest() {
     return prEvents.includes(github_1.context.eventName);
@@ -137,12 +136,11 @@ function getPullRequestNumber() {
 exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
     var _a, _b;
+    // owner/repo-name
     let repo = (_a = process.env.GITHUB_REPOSITORY) !== null && _a !== void 0 ? _a : "undefined";
     let repo_owner = (_b = process.env.GITHUB_REPOSITORY_OWNER) !== null && _b !== void 0 ? _b : "undefined";
     let repo_name = repo.substring(repo_owner.length + 1);
-    (0, core_1.info)(repo_name);
-    (0, core_1.info)(path);
-    // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
+    // path is in the format of ../workspace/{repo-name}/{RELATIVE_PATH}
     return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1);
 }
 exports.relativizePath = relativizePath;
@@ -562,6 +560,7 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getDiffMap = exports.createIssueCommentMessage = exports.createReviewCommentMessage = exports.createNoLongerPresentMessage = exports.isPresent = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = exports.NOT_PRESENT = exports.PRESENT = void 0;
 const github_context_1 = __nccwpck_require__(4915);
+const core_1 = __nccwpck_require__(2186);
 exports.PRESENT = 'PRESENT';
 exports.NOT_PRESENT = 'NOT_PRESENT';
 exports.UNKNOWN_FILE = 'Unknown File';
@@ -621,6 +620,8 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 exports.createIssueCommentMessage = createIssueCommentMessage;
 function getDiffMap(rawDiff) {
     var _a;
+    (0, core_1.info)(rawDiff);
+    (0, core_1.info)("===");
     console.info('Gathering diffs...');
     const diffMap = new Map();
     let path = exports.UNKNOWN_FILE;
@@ -628,9 +629,6 @@ function getDiffMap(rawDiff) {
         if (line.startsWith('diff --git')) {
             // TODO: Handle spaces in path
             path = `${process.env.GITHUB_WORKSPACE}/${line.split(' ')[2].substring(2)}`;
-            if (path === undefined) {
-                path = exports.UNKNOWN_FILE;
-            }
             diffMap.set(path, []);
         }
         if (line.startsWith('@@')) {

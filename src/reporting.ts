@@ -1,5 +1,6 @@
 import {relativizePath} from './github/github-context'
 import {IssueOccurrence} from './json-v7-schema'
+import {info} from "@actions/core";
 
 export const PRESENT = 'PRESENT'
 export const NOT_PRESENT = 'NOT_PRESENT'
@@ -63,6 +64,8 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 }
 
 export function getDiffMap(rawDiff: string): DiffMap {
+    info(rawDiff)
+    info("===")
   console.info('Gathering diffs...')
   const diffMap = new Map()
 
@@ -71,10 +74,6 @@ export function getDiffMap(rawDiff: string): DiffMap {
     if (line.startsWith('diff --git')) {
       // TODO: Handle spaces in path
       path = `${process.env.GITHUB_WORKSPACE}/${line.split(' ')[2].substring(2)}`
-      if (path === undefined) {
-        path = UNKNOWN_FILE
-      }
-
       diffMap.set(path, [])
     }
 

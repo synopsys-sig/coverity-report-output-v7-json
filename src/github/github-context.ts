@@ -33,11 +33,10 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
+  // owner/repo-name
   let repo = process.env.GITHUB_REPOSITORY ?? "undefined"
   let repo_owner = process.env.GITHUB_REPOSITORY_OWNER ?? "undefined"
   let repo_name = repo.substring(repo_owner.length + 1)
-    info(repo_name)
-    info(path)
-  // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
+  // path is in the format of ../workspace/{repo-name}/{RELATIVE_PATH}
   return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1)
 }
