@@ -107,6 +107,7 @@ exports.cleanUrl = cleanUrl;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.relativizePath = exports.getPullRequestNumber = exports.getSha = exports.isPullRequest = void 0;
 const github_1 = __nccwpck_require__(5438);
+const core_1 = __nccwpck_require__(2186);
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment'];
 function isPullRequest() {
     return prEvents.includes(github_1.context.eventName);
@@ -137,6 +138,8 @@ exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
     var _a;
     let repo_name = (_a = process.env.GITHUB_REPO) !== null && _a !== void 0 ? _a : "undefined";
+    (0, core_1.info)(repo_name);
+    (0, core_1.info)(path);
     // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
     return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1);
 }

@@ -1,5 +1,6 @@
 import {PullRequest} from '../_namespaces/github'
 import {context} from '@actions/github'
+import {info} from "@actions/core";
 
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment']
 
@@ -33,6 +34,8 @@ export function getPullRequestNumber(): number | undefined {
 
 export function relativizePath(path: string): string {
   let repo_name = process.env.GITHUB_REPO ?? "undefined"
+    info(repo_name)
+    info(path)
   // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
   return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1)
 }
