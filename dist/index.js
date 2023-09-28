@@ -136,11 +136,9 @@ function getPullRequestNumber() {
 exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
     var _a;
-    let length = (_a = process.env.GITHUB_WORKSPACE) === null || _a === void 0 ? void 0 : _a.length;
-    if (!length) {
-        length = 'undefined'.length;
-    }
-    return path.substring(length + 1);
+    let repo_name = (_a = process.env.GITHUB_REPO) !== null && _a !== void 0 ? _a : "undefined";
+    // path is in the format of ../workspace/{GITHUB_REPO}/{RELATIVE_PATH}
+    return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1);
 }
 exports.relativizePath = relativizePath;
 
@@ -609,8 +607,6 @@ exports.createReviewCommentMessage = createReviewCommentMessage;
 function createIssueCommentMessage(issue) {
     const message = createReviewCommentMessage(issue);
     const relativePath = (0, github_context_1.relativizePath)(issue.mainEventFilePathname);
-    console.log(process.env.GITHUB_WORKSPACE);
-    console.log(issue);
     return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
