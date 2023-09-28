@@ -63,19 +63,33 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 `
 }
 
+// naive Z-Table, can be optimized to terminate early
+function zTable(input: string) {
+    let table = new Array<number>(input.length).fill(0)
+    for (let i = 1; i < input.length; i++) {
+        for (let j = 0; j < input.length - i; j ++) {
+            if (input.charAt(j) != input.charAt(i + j)) continue
+            table[i]++
+        }
+    }
+    return table
+}
+
 export function getDiffMap(rawDiff: string): DiffMap {
-    info(rawDiff)
-    info("===")
   console.info('Gathering diffs...')
   const diffMap = new Map()
 
   let path = UNKNOWN_FILE
   for (const line of rawDiff.split('\n')) {
     if (line.startsWith('diff --git')) {
-      // TODO: Handle spaces in path
-      path = `${process.env.GITHUB_WORKSPACE}/${line.split(' ')[2].substring(2)}`
+      // this should give `diff --git a/path b/path`
+      // to get the file itself, we can use longest string match on `path b/path`
+      // since we definitely know paths are equal, path must be the longest string
+      path = line.substring("diff --git a/".length, 0)
+      path = path.substring(0, Math.max(...zTable(path)))
       diffMap.set(path, [])
     }
+    info(path)
 
     if (line.startsWith('@@')) {
       let changedLines = line.substring(3)

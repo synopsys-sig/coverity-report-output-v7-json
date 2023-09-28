@@ -618,19 +618,33 @@ This issue was discovered outside the diff for this Pull Request. You can find i
 `;
 }
 exports.createIssueCommentMessage = createIssueCommentMessage;
+// naive Z-Table, can be optimized to terminate early
+function zTable(input) {
+    let table = new Array(input.length).fill(0);
+    for (let i = 1; i < input.length; i++) {
+        for (let j = 0; j < input.length - i; j++) {
+            if (input.charAt(j) != input.charAt(i + j))
+                continue;
+            table[i]++;
+        }
+    }
+    return table;
+}
 function getDiffMap(rawDiff) {
     var _a;
-    (0, core_1.info)(rawDiff);
-    (0, core_1.info)("===");
     console.info('Gathering diffs...');
     const diffMap = new Map();
     let path = exports.UNKNOWN_FILE;
     for (const line of rawDiff.split('\n')) {
         if (line.startsWith('diff --git')) {
-            // TODO: Handle spaces in path
-            path = `${process.env.GITHUB_WORKSPACE}/${line.split(' ')[2].substring(2)}`;
+            // this should give `diff --git a/path b/path`
+            // to get the file itself, we can use longest string match on `path b/path`
+            // since we definitely know paths are equal, path must be the longest string
+            path = line.substring("diff --git a/".length, 0);
+            path = path.substring(0, Math.max(...zTable(path)));
             diffMap.set(path, []);
         }
+        (0, core_1.info)(path);
         if (line.startsWith('@@')) {
             let changedLines = line.substring(3);
             changedLines = changedLines.substring(0, changedLines.indexOf(' @@'));
