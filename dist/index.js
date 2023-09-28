@@ -640,7 +640,7 @@ function getDiffMap(rawDiff) {
             // this should give `diff --git a/path b/path`
             // to get the file itself, we can use longest string match on `path b/path`
             // since we definitely know paths are equal, path must be the longest string
-            path = line.substring("diff --git a/".length, 0);
+            path = line.substring("diff --git a/".length);
             path = path.substring(0, Math.max(...zTable(path)));
             diffMap.set(path, []);
         }
