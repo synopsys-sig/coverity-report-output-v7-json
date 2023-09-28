@@ -609,7 +609,7 @@ exports.createReviewCommentMessage = createReviewCommentMessage;
 function createIssueCommentMessage(issue) {
     const message = createReviewCommentMessage(issue);
     const relativePath = (0, github_context_1.relativizePath)(issue.mainEventFilePathname);
-    console.log(issue.mainEventFilePathname);
+    console.log(issue);
     return `${message}
 ## Issue location
 This issue was discovered outside the diff for this Pull Request. You can find it at:
