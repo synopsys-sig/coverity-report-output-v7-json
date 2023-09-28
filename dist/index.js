@@ -533,7 +533,7 @@ function run() {
     });
 }
 function isInDiff(issue, diffMap) {
-    const diffHunks = diffMap.get(issue.mainEventFilePathname);
+    const diffHunks = diffMap.get((0, github_context_1.relativizePath)(issue.mainEventFilePathname));
     if (!diffHunks) {
         return false;
     }
@@ -560,7 +560,6 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getDiffMap = exports.createIssueCommentMessage = exports.createReviewCommentMessage = exports.createNoLongerPresentMessage = exports.isPresent = exports.COMMENT_PREFACE = exports.UNKNOWN_FILE = exports.NOT_PRESENT = exports.PRESENT = void 0;
 const github_context_1 = __nccwpck_require__(4915);
-const core_1 = __nccwpck_require__(2186);
 exports.PRESENT = 'PRESENT';
 exports.NOT_PRESENT = 'NOT_PRESENT';
 exports.UNKNOWN_FILE = 'Unknown File';
@@ -644,7 +643,6 @@ function getDiffMap(rawDiff) {
             path = path.substring(0, Math.max(...zTable(path)));
             diffMap.set(path, []);
         }
-        (0, core_1.info)(path);
         if (line.startsWith('@@')) {
             let changedLines = line.substring(3);
             changedLines = changedLines.substring(0, changedLines.indexOf(' @@'));

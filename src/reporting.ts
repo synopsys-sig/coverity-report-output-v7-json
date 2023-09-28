@@ -89,7 +89,6 @@ export function getDiffMap(rawDiff: string): DiffMap {
       path = path.substring(0, Math.max(...zTable(path)))
       diffMap.set(path, [])
     }
-    info(path)
 
     if (line.startsWith('@@')) {
       let changedLines = line.substring(3)
