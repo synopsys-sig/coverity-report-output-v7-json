@@ -53,7 +53,7 @@ ${remediationString}
 export function createIssueCommentMessage(issue: IssueOccurrence): string {
   const message = createReviewCommentMessage(issue)
   const relativePath = relativizePath(issue.mainEventFilePathname)
-  console.log(relativePath)
+  console.log(process.env.GITHUB_WORKSPACE)
   console.log(issue)
 
   return `${message}
