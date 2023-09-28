@@ -25,4 +25,4 @@ inputs:
     required: false
 runs:
   using: 'node12'
-  main: 'src/main.ts'
+  main: 'dist/index.js'
