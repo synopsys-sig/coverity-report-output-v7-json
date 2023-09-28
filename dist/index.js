@@ -107,6 +107,7 @@ exports.cleanUrl = cleanUrl;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.relativizePath = exports.getPullRequestNumber = exports.getSha = exports.isPullRequest = void 0;
 const github_1 = __nccwpck_require__(5438);
+const core_1 = __nccwpck_require__(2186);
 const prEvents = ['pull_request', 'pull_request_review', 'pull_request_review_comment'];
 function isPullRequest() {
     return prEvents.includes(github_1.context.eventName);
@@ -141,6 +142,7 @@ function relativizePath(path) {
     if (path.startsWith("/__w")) {
         path = "/home/runner/work" + path.substring("/__w".length);
     }
+    (0, core_1.info)(path.substring(length + 1));
     return path.substring(length + 1);
 }
 exports.relativizePath = relativizePath;
