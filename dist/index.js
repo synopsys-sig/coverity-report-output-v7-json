@@ -609,6 +609,7 @@ exports.createReviewCommentMessage = createReviewCommentMessage;
 function createIssueCommentMessage(issue) {
     const message = createReviewCommentMessage(issue);
     const relativePath = (0, github_context_1.relativizePath)(issue.mainEventFilePathname);
+    console.log(relativePath);
     console.log(issue);
     return `${message}
 ## Issue location
