@@ -33,8 +33,5 @@ export function getPullRequestNumber(): number | undefined {
 }
 
 export function relativizePath(path: string): string {
-  info(__dirname)
-
-  // path is in the format of ../workspace/{repo-name}/{RELATIVE_PATH}
-  return path.substring(__dirname.length + 1)
+  return path.substring(__dirname.length - 4)
 }
