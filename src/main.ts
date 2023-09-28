@@ -105,7 +105,7 @@ async function run(): Promise<void> {
           for (const comment of actionIssueComments) {
             if (comment.body !== undefined && isPresent(comment.body)) {
               info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
-              updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
+              updateExistingIssueComment(comment.id, createNoLongerPresentMessage(comment.body))
             }
           }
 
