@@ -135,13 +135,7 @@ function getPullRequestNumber() {
 }
 exports.getPullRequestNumber = getPullRequestNumber;
 function relativizePath(path) {
-    var _a, _b;
-    // owner/repo-name
-    let repo = (_a = process.env.GITHUB_REPOSITORY) !== null && _a !== void 0 ? _a : "undefined";
-    let repo_owner = (_b = process.env.GITHUB_REPOSITORY_OWNER) !== null && _b !== void 0 ? _b : "undefined";
-    let repo_name = repo.substring(repo_owner.length + 1);
-    // path is in the format of ../workspace/{repo-name}/{RELATIVE_PATH}
-    return path.substring(path.lastIndexOf(repo_name) + repo_name.length + 1);
+    return path.substring(__dirname.length - 4);
 }
 exports.relativizePath = relativizePath;
 
