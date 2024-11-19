@@ -1,4 +1,6 @@
-# Coverity Report For v7 JSON Output
+# DEPRECATED: Coverity Report For v7 JSON Output
+
+This plugin has been deprecated and  in no longer supported. It is recommended that you install or migrate to the newer supported version https://github.com/marketplace/actions/black-duck-security-scan.
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/synopsys-sig/coverity-report-output-v7-json?color=blue&label=Latest%20Version&sort=semver)
 
