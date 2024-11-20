@@ -344,8 +344,8 @@ function mapMatchingMergeKeys(relevantMergeKeys) {
                     (0, core_1.info)('Error : Unable to authenticate to Coverity Connect server - please check your username and password : Authentication failed.');
                     process.exit(1);
                 }
-                else if (error.toString().match("eventId")) {
-                    throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
+                else if (error.toString().match('eventId')) {
+                    throw new Error('Project doesn’t exist, please check the configuration in your workflow ' + error);
                 }
                 else {
                     (0, core_1.info)('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
@@ -526,7 +526,7 @@ function run() {
             }
         }
         catch (err) {
-            (0, core_1.info)('Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn\'t exist.');
+            (0, core_1.info)("Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn't exist.");
             process.exit(1);
         }
     });

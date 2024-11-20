@@ -17,113 +17,112 @@ async function run(): Promise<void> {
   info(`Using JSON file path: ${JSON_FILE_PATH}`)
 
   //To check json file exists or not
-  
+
   try {
     if (fs.readFileSync(JSON_FILE_PATH) && JSON_FILE_PATH.endsWith('.json')) {
       const jsonV7Content = fs.readFileSync(JSON_FILE_PATH)
       try {
-          const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
-          let mergeKeyToIssue = new Map<string, ProjectIssue>()
-          const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
-          if (!canCheckCoverity) {
-            warning('Missing Coverity Connect info. Issues will not be checked against the server.')
+        const coverityIssues = JSON.parse(jsonV7Content.toString()) as CoverityIssuesView
+        let mergeKeyToIssue = new Map<string, ProjectIssue>()
+        const canCheckCoverity = COVERITY_URL && COVERITY_USERNAME && COVERITY_PASSWORD && COVERITY_PROJECT_NAME
+        if (!canCheckCoverity) {
+          warning('Missing Coverity Connect info. Issues will not be checked against the server.')
+        } else {
+          const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
+          const allUniqueMergeKeys = new Set<string>(allMergeKeys)
+
+          if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
+            try {
+              mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
+            } catch (error: any) {
+              setFailed(error as string | Error)
+              return Promise.reject()
+            }
+          }
+        }
+        const newReviewComments = []
+        const actionReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
+        const actionIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
+        const diffMap = await getPullRequestDiff().then(getDiffMap)
+
+        for (const issue of coverityIssues.issues) {
+          info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
+
+          const projectIssue = mergeKeyToIssue.get(issue.mergeKey)
+          let ignoredOnServer = false
+          let newOnServer = true
+          if (projectIssue) {
+            ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional']
+            newOnServer = projectIssue.firstSnapshotId == projectIssue.lastSnapshotId
+            info(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`)
+          }
+
+          const reviewCommentBody = createReviewCommentMessage(issue)
+          const issueCommentBody = createIssueCommentMessage(issue)
+
+          const reviewCommentIndex = actionReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(issue.mergeKey))
+          let existingMatchingReviewComment = undefined
+          if (reviewCommentIndex !== -1) {
+            existingMatchingReviewComment = actionReviewComments.splice(reviewCommentIndex, 1)[0]
+          }
+
+          const issueCommentIndex = actionIssueComments.findIndex(comment => comment.body?.includes(issue.mergeKey))
+          let existingMatchingIssueComment = undefined
+          if (issueCommentIndex !== -1) {
+            existingMatchingIssueComment = actionIssueComments.splice(issueCommentIndex, 1)[0]
+          }
+
+          if (existingMatchingReviewComment !== undefined) {
+            info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating if necessary...`)
+            if (existingMatchingReviewComment.body !== reviewCommentBody) {
+              updateExistingReviewComment(existingMatchingReviewComment.id, reviewCommentBody)
+            }
+          } else if (existingMatchingIssueComment !== undefined) {
+            info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating if necessary...`)
+            if (existingMatchingIssueComment.body !== issueCommentBody) {
+              updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
+            }
+          } else if (ignoredOnServer) {
+            info('Issue ignored on server, no comment needed.')
+          } else if (!newOnServer) {
+            info('Issue already existed on server, no comment needed.')
+          } else if (isInDiff(issue, diffMap)) {
+            info('Issue not reported, adding a comment to the review.')
+            newReviewComments.push(createReviewComment(issue, reviewCommentBody))
           } else {
-            const allMergeKeys = coverityIssues.issues.map(issue => issue.mergeKey)
-            const allUniqueMergeKeys = new Set<string>(allMergeKeys)
-
-            if (canCheckCoverity && coverityIssues && coverityIssues.issues.length > 0) {
-              try {
-                mergeKeyToIssue = await mapMatchingMergeKeys(allUniqueMergeKeys)
-              } catch (error: any) {
-                setFailed(error as string | Error)
-                return Promise.reject()
-              }
-            }
+            info('Issue not reported, adding an issue comment.')
+            createIssueComment(issueCommentBody)
           }
-          const newReviewComments = []
-          const actionReviewComments = await getExistingReviewComments().then(comments => comments.filter(comment => comment.body.includes(COMMENT_PREFACE)))
-          const actionIssueComments = await getExistingIssueComments().then(comments => comments.filter(comment => comment.body?.includes(COMMENT_PREFACE)))
-          const diffMap = await getPullRequestDiff().then(getDiffMap)
+        }
 
-          for (const issue of coverityIssues.issues) {
-            info(`Found Coverity Issue ${issue.mergeKey} at ${issue.mainEventFilePathname}:${issue.mainEventLineNumber}`)
-
-            const projectIssue = mergeKeyToIssue.get(issue.mergeKey)
-            let ignoredOnServer = false
-            let newOnServer = true
-            if (projectIssue) {
-              ignoredOnServer = projectIssue.action == 'Ignore' || projectIssue.classification in ['False Positive', 'Intentional']
-              newOnServer = projectIssue.firstSnapshotId == projectIssue.lastSnapshotId
-              info(`Issue state on server: ignored=${ignoredOnServer}, new=${newOnServer}`)
-            }
-
-            const reviewCommentBody = createReviewCommentMessage(issue)
-            const issueCommentBody = createIssueCommentMessage(issue)
-
-            const reviewCommentIndex = actionReviewComments.findIndex(comment => comment.line === issue.mainEventLineNumber && comment.body.includes(issue.mergeKey))
-            let existingMatchingReviewComment = undefined
-            if (reviewCommentIndex !== -1) {
-              existingMatchingReviewComment = actionReviewComments.splice(reviewCommentIndex, 1)[0]
-            }
-
-            const issueCommentIndex = actionIssueComments.findIndex(comment => comment.body?.includes(issue.mergeKey))
-            let existingMatchingIssueComment = undefined
-            if (issueCommentIndex !== -1) {
-              existingMatchingIssueComment = actionIssueComments.splice(issueCommentIndex, 1)[0]
-            }
-
-            if (existingMatchingReviewComment !== undefined) {
-              info(`Issue already reported in comment ${existingMatchingReviewComment.id}, updating if necessary...`)
-              if (existingMatchingReviewComment.body !== reviewCommentBody) {
-                updateExistingReviewComment(existingMatchingReviewComment.id, reviewCommentBody)
-              }
-            } else if (existingMatchingIssueComment !== undefined) {
-              info(`Issue already reported in comment ${existingMatchingIssueComment.id}, updating if necessary...`)
-              if (existingMatchingIssueComment.body !== issueCommentBody) {
-                updateExistingIssueComment(existingMatchingIssueComment.id, issueCommentBody)
-              }
-            } else if (ignoredOnServer) {
-              info('Issue ignored on server, no comment needed.')
-            } else if (!newOnServer) {
-              info('Issue already existed on server, no comment needed.')
-            } else if (isInDiff(issue, diffMap)) {
-              info('Issue not reported, adding a comment to the review.')
-              newReviewComments.push(createReviewComment(issue, reviewCommentBody))
-            } else {
-              info('Issue not reported, adding an issue comment.')
-              createIssueComment(issueCommentBody)
-            }
+        for (const comment of actionReviewComments) {
+          if (isPresent(comment.body)) {
+            info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
+            updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
           }
+        }
 
-          for (const comment of actionReviewComments) {
-            if (isPresent(comment.body)) {
-              info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
-              updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
-            }
+        for (const comment of actionIssueComments) {
+          if (comment.body !== undefined && isPresent(comment.body)) {
+            info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
+            updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
           }
+        }
 
-          for (const comment of actionIssueComments) {
-            if (comment.body !== undefined && isPresent(comment.body)) {
-              info(`Comment ${comment.id} represents a Coverity issue which is no longer present, updating comment to reflect resolution.`)
-              updateExistingReviewComment(comment.id, createNoLongerPresentMessage(comment.body))
-            }
-          }
+        if (newReviewComments.length > 0) {
+          info('Publishing review...')
+          createReview(newReviewComments)
+        }
 
-          if (newReviewComments.length > 0) {
-            info('Publishing review...')
-            createReview(newReviewComments)
-          }
-
-          info(`Found ${coverityIssues.issues.length} Coverity issues.`)
-      }catch (error){
+        info(`Found ${coverityIssues.issues.length} Coverity issues.`)
+      } catch (error) {
         info('Error : Unable to open and parse the Coverity results output file : File is empty or its an invalid json file.')
-        process.exit(1);
+        process.exit(1)
+      }
     }
-  }
-}
-  catch(err) {
-    info('Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn\'t exist.')
-    process.exit(1);
+  } catch (err) {
+    info("Error : Unable to open and parse the Coverity results output file : The json file path is not valid or doesn't exist.")
+    process.exit(1)
   }
 }
 

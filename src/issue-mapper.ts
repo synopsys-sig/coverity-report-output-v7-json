@@ -44,17 +44,14 @@ export async function mapMatchingMergeKeys(relevantMergeKeys: Set<string>): Prom
         .filter(projectIssue => relevantMergeKeys.has(projectIssue.mergeKey as string))
         .forEach(projectIssue => mergeKeyToProjectIssue.set(projectIssue.mergeKey as string, projectIssue))
     } catch (error: any) {
-
-      if(error.toString().match('Authentication failed')){
+      if (error.toString().match('Authentication failed')) {
         info('Error : Unable to authenticate to Coverity Connect server - please check your username and password : Authentication failed.')
-        process.exit(1);
-      }
-      else if(error.toString().match("eventId")) {
-        throw new Error("Project doesn’t exist, please check the configuration in your workflow " + error);
-      }
-      else {
-        info('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.');
-        process.exit(1);
+        process.exit(1)
+      } else if (error.toString().match('eventId')) {
+        throw new Error('Project doesn’t exist, please check the configuration in your workflow ' + error)
+      } else {
+        info('Error : Unable to connect to Coverity Connect server - please check the configuration in your workflow : Invalid URL.')
+        process.exit(1)
       }
     }
     offset += PAGE_SIZE
