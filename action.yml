@@ -2,7 +2,7 @@ name: 'Coverity json-output-v7 Report'
 branding:
   icon: 'shield'
   color: 'purple'
-description: 'Parse Coverity json-output-v7 and report on the results within GitHub'
+description: 'DEPRECATED: Please use Black Duck Security Scan "https://github.com/marketplace/actions/black-duck-security-scan" '
 author: 'Synopsys Inc'
 inputs:
   github-token:
